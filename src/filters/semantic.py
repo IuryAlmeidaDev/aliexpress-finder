@@ -6,9 +6,10 @@ def normalize_text(text: str) -> str:
 
 _RAW_SYNONYMS = {
     "safira": ["safira", "sapphire", "safir"],
-    "sem logo": ["sem logo", "sem logotipo", "sterile", "sterile dial", "no logo", "unbranded"],
+    "sem logo": ["sem logo", "sem logotipo", "sterile", "sterile dial", "no logo", "unbranded", "sem marca", "liso", "simples"],
     "automatico": ["automatico", "automático", "automatic", "nh35", "nh36", "miyota"],
     "aço": ["aco", "aço", "stainless steel", "steel", "316l"],
+    "infantil": ["infantil", "crianca", "criança", "kids", "children", "teen", "adolescente", "estudante", "aluno"],
 }
 
 SYNONYMS = {}
