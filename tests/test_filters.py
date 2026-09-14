@@ -8,6 +8,8 @@ def test_anti_trick_accessory_detection():
     assert is_accessory_trick("Silicone strap for watch band 20mm", main_query="relogio automatico") is True
     assert is_accessory_trick("Empty watch box display case", main_query="relogio") is True
     assert is_accessory_trick("Pagani Design Automatic Watch NH35", main_query="relogio automatico") is False
+    assert is_accessory_trick("Relógio Masculino com pulseira de aço inoxidável 316L", main_query="relogio") is False
+    assert is_accessory_trick("Relógio de quartzo addiesdive pulseira de silicone vidro mineral", main_query="relogio") is False
 
 def test_anti_trick_when_searching_for_accessories():
     # Should NOT flag accessories when user explicitly searches for them
@@ -31,6 +33,9 @@ def test_semantic_synonym_cross_language_mapping():
     assert matches_semantic_criteria("Tandorio Stainless Steel", include_terms=["aço"], exclude_terms=[]) is True
     assert matches_semantic_criteria("Pagani NH35 Watch", include_terms=["automatico"], exclude_terms=[]) is True
     assert matches_semantic_criteria("Pagani Design Sapphire", include_terms=["safira"], exclude_terms=[]) is True
+    assert matches_semantic_criteria("Addiesdive 316L Case", include_terms=["316l"], exclude_terms=[]) is True
+    assert matches_semantic_criteria("Addiesdive K1 Bubble Glass", include_terms=["mineral"], exclude_terms=[]) is True
+    assert matches_semantic_criteria("Addiesdive VH31 Movement", include_terms=["japones"], exclude_terms=[]) is True
 
 def test_reputation_filter():
     assert satisfies_reputation(rating=4.8, sales=150, min_rating=4.5, min_sales=10) is True

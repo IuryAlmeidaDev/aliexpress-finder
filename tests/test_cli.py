@@ -160,3 +160,31 @@ def test_cli_run_custom_min_sales_and_rating(monkeypatch):
         assert len(mock_render.call_args[0][0]) == 1
 
 
+def test_cli_run_choice_mode(monkeypatch):
+    import sys
+    from unittest.mock import patch
+    from src.cli.main import run
+
+    mock_items = [
+        {
+            "title": "Relogio Quartzo Choice",
+            "price": 135.13,
+            "shipping": 0.0,
+            "sales": 150,
+            "rating": 4.8,
+            "url": "https://aliexpress.com/item/1.html"
+        }
+    ]
+
+    monkeypatch.setattr(sys, "argv", ["main.py", "--busca", "relogio", "--choice"])
+    with patch("src.cli.main.DirectAliExpressClient.search", return_value=mock_items), \
+         patch("src.cli.main.render_results_table") as mock_render:
+        run()
+        assert mock_render.called
+        records = mock_render.call_args[0][0]
+        assert len(records) == 1
+        assert abs(records[0]["Impostos BR (R$)"] - 27.69) <= 0.02
+        assert abs(records[0]["Custo Final (R$)"] - 162.82) <= 0.02
+
+
+

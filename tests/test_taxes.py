@@ -23,3 +23,12 @@ def test_invalid_tax_rates():
         calculate_import_taxes(100.0, usd_brl_rate=-1.0)
     with pytest.raises(ValueError):
         calculate_import_taxes(100.0, icms_rate=1.0)
+
+def test_choice_subsidized_tax():
+    # Exactly replicates AliExpress Choice checkout where II is subsidized to R$ 0.00
+    res = calculate_import_taxes(product_price_brl=135.13, shipping_fee_brl=0.0, icms_rate=0.17, choice_subsidized=True)
+    assert res.is_choice_subsidized is True
+    assert res.import_tax_brl == 0.0
+    assert pytest.approx(res.icms_tax_brl, 0.01) == 27.69
+    assert pytest.approx(res.total_taxes_brl, 0.01) == 27.69
+    assert pytest.approx(res.total_landed_cost_brl, 0.01) == 162.82

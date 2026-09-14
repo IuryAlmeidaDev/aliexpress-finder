@@ -24,9 +24,20 @@ def is_accessory_trick(title: str, main_query: str) -> bool:
                 return True
             if not any(w in title_lower for w in ["watch", "relógio", "relogio"]):
                 return True
-            if re.search(rf"{pattern}\s+(for|para|de)\s+", title_lower):
+            # Title begins with strap / band
+            if re.search(r"^(?:nova\s+|luxo\s+|vintage\s+)?(?:pulseira|strap|band|bracelet)\b", title_lower.strip()):
                 return True
-            if re.search(rf"(?:watch|relógio|relogio)\s+{pattern}", title_lower):
+            # Strap specifically for a watch brand or watch
+            if re.search(r"\b(?:pulseira|strap|band|bracelet)\s+(?:for|para)\s+", title_lower):
                 return True
+            if re.search(r"\b(?:pulseira|strap|band|bracelet)\s+de\s+(?:rel[oó]gio|smartwatch|watch|apple|samsung|garmin|xiaomi|amazfit|seiko|rolex|casio)", title_lower):
+                return True
+            # English 'watch strap', 'watch band'
+            if re.search(r"(?:watch|relógio|relogio)\s+(?:strap|band|bracelet)\b", title_lower):
+                return True
+            # Tools, spare parts, buckles for watches
+            if pattern in [r"\bferramenta\b", r"\btool\b", r"\bpeça de reposição\b", r"\bspare part\b", r"\bfecho\b", r"\bbuckle\b"]:
+                if re.search(rf"{pattern}\s+(?:for|para|de)\s+", title_lower):
+                    return True
 
     return False

@@ -10,17 +10,20 @@ class TaxCalculationResult:
     icms_tax_brl: float
     total_taxes_brl: float
     total_landed_cost_brl: float
+    is_choice_subsidized: bool = False
 
 def calculate_import_taxes(
     product_price_brl: float,
     shipping_fee_brl: float = 0.0,
     usd_brl_rate: float = 5.50,
-    icms_rate: float = 0.17
+    icms_rate: float = 0.17,
+    choice_subsidized: bool = False
 ) -> TaxCalculationResult:
     """
     Calculates Brazilian import taxes according to Remessa Conforme rules:
     - Under or equal to US$ 50: 20% Import Tax (II)
     - Over US$ 50: 60% Import Tax (II) with a fixed deduction of US$ 20
+    - Choice subsidy: When AliExpress Choice subsidizes II, Import Tax is R$ 0.00
     - ICMS: Calculated 'por dentro' (grossed-up base): (Customs Value + II) / (1 - ICMS) * ICMS
     """
     if usd_brl_rate <= 0:
@@ -32,7 +35,9 @@ def calculate_import_taxes(
     customs_value_usd = round(customs_value_brl / usd_brl_rate, 2)
     is_under_50_usd = customs_value_usd <= 50.00
 
-    if is_under_50_usd:
+    if choice_subsidized:
+        import_tax_brl = 0.0
+    elif is_under_50_usd:
         import_tax_brl = round(0.20 * customs_value_brl, 2)
     else:
         gross_ii = 0.60 * customs_value_brl
@@ -55,4 +60,5 @@ def calculate_import_taxes(
         icms_tax_brl=icms_tax_brl,
         total_taxes_brl=total_taxes_brl,
         total_landed_cost_brl=total_landed_cost_brl,
+        is_choice_subsidized=choice_subsidized,
     )
