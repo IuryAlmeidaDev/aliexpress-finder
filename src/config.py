@@ -17,12 +17,12 @@ class Config:
 
 def load_config() -> Config:
     return Config(
-        ALIEXPRESS_APP_KEY=os.getenv("ALIEXPRESS_APP_KEY", ""),
-        ALIEXPRESS_APP_SECRET=os.getenv("ALIEXPRESS_APP_SECRET", ""),
-        DEFAULT_USD_BRL=float(os.getenv("DEFAULT_USD_BRL", "5.50")),
-        DEFAULT_ICMS_RATE=float(os.getenv("DEFAULT_ICMS_RATE", "0.17")),
-        DEFAULT_MARKETPLACE_FEE=float(os.getenv("DEFAULT_MARKETPLACE_FEE", "0.16")),
-        DEFAULT_TARGET_MARGIN=float(os.getenv("DEFAULT_TARGET_MARGIN", "0.40")),
-        MIN_STORE_RATING=float(os.getenv("MIN_STORE_RATING", "4.5")),
-        MIN_SALES_COUNT=int(os.getenv("MIN_SALES_COUNT", "10")),
+        ALIEXPRESS_APP_KEY=os.getenv("ALIEXPRESS_APP_KEY") or "",
+        ALIEXPRESS_APP_SECRET=os.getenv("ALIEXPRESS_APP_SECRET") or "",
+        DEFAULT_USD_BRL=float(os.getenv("DEFAULT_USD_BRL") or "5.50"),
+        DEFAULT_ICMS_RATE=float(os.getenv("DEFAULT_ICMS_RATE") or "0.17"),
+        DEFAULT_MARKETPLACE_FEE=float(os.getenv("DEFAULT_MARKETPLACE_FEE") or "0.16"),
+        DEFAULT_TARGET_MARGIN=float(os.getenv("DEFAULT_TARGET_MARGIN") or "0.40"),
+        MIN_STORE_RATING=float(os.getenv("MIN_STORE_RATING") or "4.5"),
+        MIN_SALES_COUNT=int(os.getenv("MIN_SALES_COUNT") or "10"),
     )

@@ -23,6 +23,14 @@ def run():
     args = parser.parse_args()
 
     cfg = load_config()
+    target_margin = args.margem / 100.0
+    if target_margin + cfg.DEFAULT_MARKETPLACE_FEE >= 1.0:
+        console.print(
+            f"[bold red]Erro:[/bold red] Margem desejada ({args.margem}%) somada à taxa do marketplace "
+            f"({cfg.DEFAULT_MARKETPLACE_FEE * 100:.1f}%) deve ser menor que 100%."
+        )
+        sys.exit(1)
+
     console.print(f"[bold green]🔎 Buscando no AliExpress por:[/bold green] '{args.busca}'...")
 
     # Choose client: official if keys are present, otherwise direct scraper
@@ -43,7 +51,6 @@ def run():
     filtered_items = pipeline.filter_products(raw_items, args.busca, include_terms, exclude_terms)
 
     records = []
-    target_margin = args.margem / 100.0
 
     for item in filtered_items:
         tax_res = calculate_import_taxes(

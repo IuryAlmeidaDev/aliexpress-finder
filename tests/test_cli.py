@@ -113,3 +113,22 @@ def test_cli_help(monkeypatch, capsys):
         assert e.code == 0
     captured = capsys.readouterr()
     assert "AliExpress Resale Opportunity Finder" in captured.out
+
+
+def test_cli_run_impossible_margin(monkeypatch, capsys):
+    import sys
+    from src.cli.main import run
+
+    # 85% margin + default 16% marketplace fee = 101% >= 100%
+    monkeypatch.setattr(sys, "argv", ["main.py", "--busca", "relogio", "--margem", "85.0"])
+    try:
+        run()
+    except SystemExit as e:
+        assert e.code == 1
+    else:
+        assert False, "CLI should have exited with SystemExit"
+
+    captured = capsys.readouterr()
+    assert "Erro:" in captured.out
+    assert "menor que 100%" in captured.out
+
