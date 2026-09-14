@@ -132,3 +132,31 @@ def test_cli_run_impossible_margin(monkeypatch, capsys):
     assert "Erro:" in captured.out
     assert "menor que 100%" in captured.out
 
+
+def test_cli_run_custom_min_sales_and_rating(monkeypatch):
+    import sys
+    from unittest.mock import patch
+    from src.cli.main import run
+
+    mock_items = [
+        {
+            "title": "Relogio Automatico Pagani Novo",
+            "price": 80.0,
+            "shipping": 0.0,
+            "sales": 2,
+            "rating": 3.8,
+            "url": "https://aliexpress.com/item/1.html"
+        }
+    ]
+
+    # With min-vendas 1 and min-nota 3.5, the item should be kept and rendered
+    monkeypatch.setattr(sys, "argv", [
+        "main.py", "--busca", "relogio", "--min-vendas", "1", "--min-nota", "3.5"
+    ])
+    with patch("src.cli.main.DirectAliExpressClient.search", return_value=mock_items), \
+         patch("src.cli.main.render_results_table") as mock_render:
+        run()
+        assert mock_render.called
+        assert len(mock_render.call_args[0][0]) == 1
+
+

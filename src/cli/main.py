@@ -1,5 +1,13 @@
 import argparse
 import sys
+
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 from src.config import load_config
 from src.clients.direct_scraper import DirectAliExpressClient
 from src.clients.official_api import OfficialAliExpressClient
@@ -19,6 +27,8 @@ def run():
     parser.add_argument("--excluir", type=str, default="", help="Termos proibidos separados por vírgula (ex: 'quartz, pulseira')")
     parser.add_argument("--max-custo", type=float, default=None, help="Custo final máximo em R$")
     parser.add_argument("--margem", type=float, default=40.0, help="Margem líquida desejada em porcentagem (padrão: 40%%)")
+    parser.add_argument("--min-vendas", type=int, default=None, help="Vendas mínimas do produto (padrão: valor do .env)")
+    parser.add_argument("--min-nota", type=float, default=None, help="Avaliação mínima da loja/produto (padrão: valor do .env)")
     parser.add_argument("--exportar", action="store_true", help="Salva os resultados em arquivo Excel")
     args = parser.parse_args()
 
@@ -31,7 +41,11 @@ def run():
         )
         sys.exit(1)
 
+    min_sales = args.min_vendas if args.min_vendas is not None else cfg.MIN_SALES_COUNT
+    min_rating = args.min_nota if args.min_nota is not None else cfg.MIN_STORE_RATING
+
     console.print(f"[bold green]🔎 Buscando no AliExpress por:[/bold green] '{args.busca}'...")
+    console.print(f"[dim]Critérios: Nota min={min_rating} | Vendas min={min_sales} | Margem desejada={args.margem}%[/dim]")
 
     # Choose client: official if keys are present, otherwise direct scraper
     client = OfficialAliExpressClient(cfg.ALIEXPRESS_APP_KEY, cfg.ALIEXPRESS_APP_SECRET)
@@ -47,7 +61,7 @@ def run():
     include_terms = [t.strip() for t in args.incluir.split(",") if t.strip()]
     exclude_terms = [t.strip() for t in args.excluir.split(",") if t.strip()]
 
-    pipeline = FilterPipeline(min_rating=cfg.MIN_STORE_RATING, min_sales=cfg.MIN_SALES_COUNT)
+    pipeline = FilterPipeline(min_rating=min_rating, min_sales=min_sales)
     filtered_items = pipeline.filter_products(raw_items, args.busca, include_terms, exclude_terms)
 
     records = []

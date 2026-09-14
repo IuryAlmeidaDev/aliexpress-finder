@@ -1,8 +1,14 @@
+import sys
 from rich.console import Console
 from rich.table import Table
 from typing import List, Dict, Any
 
 def render_results_table(records: List[Dict[str, Any]]):
+    if sys.platform == "win32":
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
     console = Console()
     table = Table(title="💎 Melhores Oportunidades Encontradas no AliExpress (Custo Brasil & Margem)", show_header=True, header_style="bold magenta")
 
