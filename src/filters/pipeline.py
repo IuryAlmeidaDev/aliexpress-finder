@@ -21,8 +21,8 @@ class FilterPipeline:
 
         for item in items:
             title = item.get("title", "")
-            rating = float(item.get("rating", 0.0))
-            sales = int(item.get("sales", 0))
+            rating = float(item.get("rating") or 0.0)
+            sales = int(item.get("sales") or 0)
 
             if is_accessory_trick(title, search_query):
                 continue

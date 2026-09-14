@@ -26,6 +26,12 @@ def test_semantic_synonyms_and_normalization():
     assert matches_semantic_criteria("Relógio Automático Aço 316L", include_terms=["aço", "automatico"], exclude_terms=[]) is True
     assert matches_semantic_criteria("Relogio Automatico Dial No Logo", include_terms=["sem logo"], exclude_terms=[]) is True
 
+def test_semantic_synonym_cross_language_mapping():
+    # Cross-language and accent-normalized synonyms (e.g. "aço" -> "aco" matching "Stainless Steel")
+    assert matches_semantic_criteria("Tandorio Stainless Steel", include_terms=["aço"], exclude_terms=[]) is True
+    assert matches_semantic_criteria("Pagani NH35 Watch", include_terms=["automatico"], exclude_terms=[]) is True
+    assert matches_semantic_criteria("Pagani Design Sapphire", include_terms=["safira"], exclude_terms=[]) is True
+
 def test_reputation_filter():
     assert satisfies_reputation(rating=4.8, sales=150, min_rating=4.5, min_sales=10) is True
     assert satisfies_reputation(rating=4.2, sales=150, min_rating=4.5, min_sales=10) is False
@@ -56,3 +62,12 @@ def test_filter_pipeline():
 def test_filter_pipeline_empty_and_defaults():
     pipeline = FilterPipeline()
     assert pipeline.filter_products([], "relogio") == []
+
+def test_filter_pipeline_with_none_rating_and_sales():
+    # Ensure items with None for rating or sales don't raise TypeError
+    pipeline = FilterPipeline()
+    items = [
+        {"title": "Relógio Automático Vidro Safira Sem Logo", "price": 250.0, "rating": None, "sales": None},
+    ]
+    filtered = pipeline.filter_products(items, "relogio automatico")
+    assert len(filtered) == 0

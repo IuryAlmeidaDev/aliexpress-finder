@@ -1,15 +1,20 @@
 import unicodedata
 
-SYNONYMS = {
+def normalize_text(text: str) -> str:
+    nfkd = unicodedata.normalize('NFKD', text)
+    return "".join([c for c in nfkd if not unicodedata.combining(c)]).lower()
+
+_RAW_SYNONYMS = {
     "safira": ["safira", "sapphire", "safir"],
     "sem logo": ["sem logo", "sem logotipo", "sterile", "sterile dial", "no logo", "unbranded"],
     "automatico": ["automatico", "automático", "automatic", "nh35", "nh36", "miyota"],
     "aço": ["aco", "aço", "stainless steel", "steel", "316l"],
 }
 
-def normalize_text(text: str) -> str:
-    nfkd = unicodedata.normalize('NFKD', text)
-    return "".join([c for c in nfkd if not unicodedata.combining(c)]).lower()
+SYNONYMS = {}
+for syn_list in _RAW_SYNONYMS.values():
+    for word in syn_list:
+        SYNONYMS[normalize_text(word)] = syn_list
 
 def matches_semantic_criteria(title: str, include_terms: list[str], exclude_terms: list[str]) -> bool:
     norm_title = normalize_text(title)
