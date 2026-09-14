@@ -1,4 +1,5 @@
 import re
+import time
 import urllib.parse
 import requests
 from bs4 import BeautifulSoup
@@ -22,19 +23,35 @@ def parse_alibaba_price(price_str: str, usd_rate: float = 5.50) -> float:
     if not price_str:
         return 0.0
     clean = price_str.strip()
-    is_usd = "$" in clean or "USD" in clean.upper() or "US" in clean.upper()
+    is_usd = "$" in clean or bool(re.search(r"\b(US|USD)\b", clean, re.IGNORECASE))
     if "R$" in clean:
         is_usd = False
 
     # Extract first price token
-    m = re.search(r"(\d+(?:[.,]\d+)?)", clean)
+    m = re.search(r"(\d+(?:[.,]\d+)*)", clean)
     if not m:
         return 0.0
     num_str = m.group(1)
+
     if "," in num_str and "." in num_str:
-        num_str = num_str.replace(".", "").replace(",", ".")
+        if num_str.rfind(",") < num_str.rfind("."):
+            # Format: 1,200.00 (US format: comma is thousands)
+            num_str = num_str.replace(",", "")
+        else:
+            # Format: 1.250,90 (BR/EU format: dot is thousands, comma is decimal)
+            num_str = num_str.replace(".", "").replace(",", ".")
     elif "," in num_str:
-        num_str = num_str.replace(",", ".")
+        if is_usd or re.match(r"^\d{1,3}(?:,\d{3})+$", num_str):
+            # In USD or thousands pattern, comma is thousands separator
+            num_str = num_str.replace(",", "")
+        else:
+            # E.g. "15,50" in BRL
+            num_str = num_str.replace(",", ".")
+    elif "." in num_str:
+        if not is_usd and re.match(r"^\d{1,3}(?:\.\d{3})+$", num_str):
+            # In BRL without decimals (e.g. "R$ 1.500"), dot is thousands separator
+            num_str = num_str.replace(".", "")
+
     try:
         val = float(num_str)
         if is_usd:
@@ -52,7 +69,11 @@ def parse_alibaba_html_items(html: str, usd_rate: float = 5.50) -> List[Dict[str
         cards = soup.find_all("div", attrs={"data-spm": lambda s: s and "offer" in s})
 
     for card in cards:
-        link_el = card.find("a", href=True)
+        link_el = (
+            card.find("a", href=lambda h: h and "product-detail" in h)
+            or card.find("a", class_=lambda c: c and "title" in c.lower(), href=True)
+            or card.find("a", href=True)
+        )
         url = link_el["href"] if link_el else ""
         if url.startswith("//"):
             url = "https:" + url
@@ -120,7 +141,6 @@ class DirectAlibabaClient(BaseSearchClient):
         })
 
     def search(self, query: str, max_items: int = 30) -> List[Dict[str, Any]]:
-        import time
         url = self.SEARCH_URL.format(query=urllib.parse.quote(query))
         items: List[Dict[str, Any]] = []
         page = 1

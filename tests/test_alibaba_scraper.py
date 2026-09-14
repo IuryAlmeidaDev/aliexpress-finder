@@ -1,4 +1,10 @@
-from src.clients.alibaba_scraper import parse_moq, parse_alibaba_price, parse_alibaba_html_items
+from unittest.mock import MagicMock, patch
+from src.clients.alibaba_scraper import (
+    parse_moq,
+    parse_alibaba_price,
+    parse_alibaba_html_items,
+    DirectAlibabaClient,
+)
 
 MOCK_ALIBABA_HTML = """
 <div class="organic-list-offer-outter" data-spm="offer">
@@ -37,6 +43,11 @@ def test_parse_alibaba_price():
     assert parse_alibaba_price("R$ 15,50", usd_rate=5.50) == 15.50
     assert parse_alibaba_price("", usd_rate=5.50) == 0.0
 
+    # Thousands formatting tests
+    assert parse_alibaba_price("$1,200.00", usd_rate=5.50) == round(1200.00 * 5.50, 2)
+    assert parse_alibaba_price("R$ 1.250,90", usd_rate=5.50) == 1250.90
+    assert parse_alibaba_price("$1,500", usd_rate=5.50) == round(1500.00 * 5.50, 2)
+
 def test_parse_alibaba_html_items():
     items = parse_alibaba_html_items(MOCK_ALIBABA_HTML, usd_rate=5.50)
     assert len(items) == 2
@@ -58,3 +69,36 @@ def test_parse_alibaba_html_items():
     assert second["is_verified"] is False
     assert second["has_trade_assurance"] is False
     assert second["years_in_business"] == 0
+
+def test_direct_alibaba_client_search():
+    client = DirectAlibabaClient(usd_rate=5.50)
+    assert client.timeout == 15
+    assert client.usd_rate == 5.50
+
+    html_with_duplicate = MOCK_ALIBABA_HTML + """
+    <div class="organic-list-offer-outter" data-spm="offer">
+        <a class="organic-gallery-title" href="//www.alibaba.com/product-detail/Custom-Kids-Digital-Watch_1600123456.html">
+            Custom Kids Digital Watch Duplicate
+        </a>
+        <div class="element-offer-price">$0.85</div>
+        <div class="element-offer-minorder">Min. order: 50 pieces</div>
+    </div>
+    """
+
+    mock_resp = MagicMock()
+    mock_resp.text = html_with_duplicate
+    mock_resp.raise_for_status.return_value = None
+
+    with patch.object(client.session, "get", return_value=mock_resp) as mock_get:
+        results = client.search("watch", max_items=2)
+        assert len(results) == 2
+        assert results[0]["id"] == "1600123456"
+        assert results[1]["id"] == "1600999999"
+        # Deduplication check: duplicate item 1600123456 was ignored
+        assert len({it["id"] for it in results}) == 2
+        mock_get.assert_called_once()
+
+        # Limiting check: max_items=1 limits results to 1 item
+        single_result = client.search("watch", max_items=1)
+        assert len(single_result) == 1
+        assert single_result[0]["id"] == "1600123456"
