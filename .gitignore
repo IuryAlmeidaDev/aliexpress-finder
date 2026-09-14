@@ -32,3 +32,4 @@ htmlcov/
 *.xlsx
 *.csv
 scratch*
+.superpowers/
