@@ -14,6 +14,10 @@ def is_accessory_trick(title: str, main_query: str) -> bool:
     if any(k in query_lower for k in ["pulseira", "strap", "band", "caixa", "ferramenta"]):
         return False
 
+    is_watch_search = any(w in query_lower for w in ["relogio", "relógio", "watch", "cronografo", "cronógrafo"])
+    if not is_watch_search:
+        return False
+
     for pattern in ACCESSORY_KEYWORDS:
         if re.search(pattern, title_lower):
             if any(k in pattern for k in ["vazia", "only", "empty", "display case"]):
