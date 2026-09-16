@@ -1,7 +1,7 @@
 # AliExpress & Alibaba Resale Opportunity Finder & Tax Calculator 🇧🇷
 
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/Tests-86%20passed%20(100%25)-brightgreen?logo=pytest&logoColor=white)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-93%20passed%20(100%25)-brightgreen?logo=pytest&logoColor=white)](tests/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
 [![Documentation](https://img.shields.io/badge/Docs-Docusaurus%203-orange?logo=docusaurus&logoColor=white)](docs/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -100,14 +100,17 @@ Todas as simulações utilizam as regras aduaneiras oficiais brasileiras:
 | **AliExpress Modo Choice** | **R$ 0,00 (100% subsidiado)** | $\text{Base} = \frac{\text{Aduaneiro}}{1 - \text{ICMS}}$ |
 | **Alibaba B2B (Atacado / RTS)**| 60% sobre a fatura do lote | $\text{Base} = \frac{\text{Lote} + \text{II}}{1 - \text{ICMS}}$ |
 
+* **Câmbio Comercial em Tempo Real (AwesomeAPI):** Consulta automaticamente a taxa do dia USD/BRL com cache inteligente de 2h e suporte a override manual via `--usd <valor>`.
+
 ---
 
 ## 💻 Cheat-Sheet de Comandos da CLI
 
 ### Mineração AliExpress:
 ```bash
-# Mineração com margem de 40%, nota mínima 4.7 e vendas mínimas 30:
+# Mineração com cotação automática em tempo real ou com dólar manual:
 python -m src.cli.main --busca "relogio automatico" --choice --min-nota 4.7 --min-vendas 30 --exportar
+python -m src.cli.main --busca "relogio automatico" --usd 5.80
 ```
 
 ### Atacado Alibaba:
@@ -134,7 +137,7 @@ O projeto conta com suíte de testes unitários e de integração abrangente cob
 ```bash
 pytest
 ```
-*Resultado: **86 passed** em ~1.5s.*
+*Resultado: **93 passed** em ~1.7s.*
 
 ---
 

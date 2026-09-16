@@ -62,7 +62,7 @@ def print_competitor_dossier_terminal(dossier: MarketDossier, console: Console =
         f"[bold]Maior Preço:[/bold] R$ {dossier.max_competitor_price:.2f}\n"
         f"🚚 [bold]Presença em Envio Rápido (Full):[/bold] {dossier.full_shipping_share_pct}%\n"
         f"🎁 [bold]Acessórios Comuns no Mercado:[/bold] {', '.join(dossier.common_kit_items) if dossier.common_kit_items else 'Nenhum padrão identificado'}\n"
-        f"🇨🇳 [bold yellow]Teto de Custo FOB na China (p/ 35% margem):[/bold yellow] [bold green]US$ {dossier.target_fob_china_usd:.2f}[/bold green] (R$ {dossier.target_fob_china_usd * 5.50:.2f})"
+        f"🇨🇳 [bold yellow]Teto de Custo FOB na China (p/ 35% margem):[/bold yellow] [bold green]US$ {dossier.target_fob_china_usd:.2f}[/bold green] (R$ {dossier.target_fob_china_brl:.2f})"
     )
     console.print(Panel(stats_info, title="📈 [bold cyan]ESTATÍSTICAS E BENCHMARKING DE PREÇO[/bold cyan]", expand=False))
 

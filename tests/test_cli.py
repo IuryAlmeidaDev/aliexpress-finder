@@ -202,4 +202,27 @@ def test_cli_mercado_livre_does_not_require_search_term(monkeypatch, tmp_path):
     assert mock_run.called
 
 
+def test_cli_ali_with_manual_usd(monkeypatch):
+    import sys
+    from unittest.mock import patch
+    from src.cli.main import run
+
+    mock_items = [
+        {
+            "title": "Produto Teste USD",
+            "price": 200.0,
+            "shipping": 0.0,
+            "sales": 50,
+            "rating": 4.8,
+            "url": "https://aliexpress.com/item/1.html"
+        }
+    ]
+
+    monkeypatch.setattr(sys, "argv", ["main.py", "--busca", "teste", "--usd", "6.00"])
+    with patch("src.cli.main.DirectAliExpressClient.search", return_value=mock_items), \
+         patch("src.cli.main.render_results_table") as mock_render:
+        run()
+        assert mock_render.called
+
+
 

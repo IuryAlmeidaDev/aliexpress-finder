@@ -46,7 +46,7 @@ def export_dossier_markdown(dossier: MarketDossier, filepath: str) -> None:
         f"- **Preço Mediano:** R$ {dossier.median_competitor_price:.2f}",
         f"- **Participação de Envio Rápido (Full):** {dossier.full_shipping_share_pct}%",
         f"- **Acessórios Comuns:** {', '.join(dossier.common_kit_items) if dossier.common_kit_items else 'Nenhum'}",
-        f"- **Teto de Custo FOB na China (p/ 35% de margem líquida):** US$ {dossier.target_fob_china_usd:.2f} (~R$ {dossier.target_fob_china_usd * 5.50:.2f})",
+        f"- **Teto de Custo FOB na China (p/ 35% de margem líquida):** US$ {dossier.target_fob_china_usd:.2f} (~R$ {dossier.target_fob_china_brl:.2f})",
         f"",
         f"---",
         f"",
@@ -104,7 +104,7 @@ def export_competitors_excel(dossier: MarketDossier, filepath: str) -> None:
         {"Métrica / Estratégia": "Participação Envio Full (%)", "Valor": f"{dossier.full_shipping_share_pct}%"},
         {"Métrica / Estratégia": "Kits Mais Frequentes", "Valor": ", ".join(dossier.common_kit_items)},
         {"Métrica / Estratégia": "Teto Custo FOB China (USD)", "Valor": f"US$ {dossier.target_fob_china_usd:.2f}"},
-        {"Métrica / Estratégia": "Teto Custo FOB China (BRL)", "Valor": f"R$ {dossier.target_fob_china_usd * 5.50:.2f}"},
+        {"Métrica / Estratégia": "Teto Custo FOB China (BRL)", "Valor": f"R$ {dossier.target_fob_china_brl:.2f}"},
     ]
     for idx, gap in enumerate(dossier.market_gaps, start=1):
         summary_rows.append({"Métrica / Estratégia": f"Brecha de Mercado #{idx}", "Valor": gap})

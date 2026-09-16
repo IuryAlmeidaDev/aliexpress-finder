@@ -41,4 +41,9 @@ class MarketDossier:
     common_kit_items: List[str] = field(default_factory=list)
     market_gaps: List[str] = field(default_factory=list)
     target_fob_china_usd: float = 0.0
+    usd_rate: float = 5.50
     recommended_china_suppliers: List[Dict[str, Any]] = field(default_factory=list)
+
+    @property
+    def target_fob_china_brl(self) -> float:
+        return round(self.target_fob_china_usd * self.usd_rate, 2)

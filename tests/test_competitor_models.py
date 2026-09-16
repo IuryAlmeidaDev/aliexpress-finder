@@ -85,3 +85,5 @@ def test_market_dossier_creation():
     assert len(dossier.competitors) == 2
     assert dossier.avg_competitor_price == 60.0
     assert dossier.target_fob_china_usd == 1.80
+    assert dossier.usd_rate == 5.50
+    assert dossier.target_fob_china_brl == round(1.80 * 5.50, 2)

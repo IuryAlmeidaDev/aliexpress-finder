@@ -17,6 +17,7 @@ from src.filters.alibaba_pipeline import AlibabaFilterPipeline
 from src.finance.taxes import calculate_import_taxes
 from src.finance.margins import simulate_resale
 from src.finance.wholesale import calculate_wholesale_batch_costs, simulate_wholesale_resale
+from src.finance.currency import get_usd_brl_rate
 from src.cli.formatters import render_results_table, render_alibaba_table
 from src.cli.exporter import export_to_excel
 from src.mercado_livre.client import MercadoLivreClient
@@ -32,9 +33,24 @@ from rich.console import Console
 
 console = Console()
 
+def print_currency_info(rate_info):
+    if rate_info.source == "manual":
+        console.print(f"[dim]💵 Câmbio USD/BRL: R$ {rate_info.rate:.2f} (definido manualmente via --usd)[/dim]")
+    elif rate_info.source == "api":
+        console.print(f"[dim]💵 Câmbio USD/BRL: R$ {rate_info.rate:.2f} (tempo real via AwesomeAPI - {rate_info.updated_at})[/dim]")
+    elif rate_info.source == "cache":
+        console.print(f"[dim]💵 Câmbio USD/BRL: R$ {rate_info.rate:.2f} (cache local - {rate_info.updated_at})[/dim]")
+    elif rate_info.source == "stale_cache":
+        console.print(f"[dim]💵 Câmbio USD/BRL: R$ {rate_info.rate:.2f} (cache anterior - offline)[/dim]")
+    else:
+        console.print(f"[dim]💵 Câmbio USD/BRL: R$ {rate_info.rate:.2f} (padrão de configuração)[/dim]")
+
 def handle_concorrencia(args):
     cfg = load_config()
-    usd_rate = getattr(args, "usd", cfg.DEFAULT_USD_BRL)
+    manual_usd = getattr(args, "usd", None)
+    rate_info = get_usd_brl_rate(manual_rate=manual_usd, fallback_rate=cfg.DEFAULT_USD_BRL)
+    print_currency_info(rate_info)
+    usd_rate = rate_info.rate
     target_margin = getattr(args, "margem", 35.0)
 
     url = getattr(args, "url", None) or getattr(args, "concorrencia_url", "")
@@ -106,8 +122,8 @@ def run():
         comp_parser.add_argument("--url", type=str, default="", help="URL do anúncio/produto para dissecar")
         comp_parser.add_argument("--termo", type=str, default="", help="Palavra-chave ou nicho de busca")
         comp_parser.add_argument("--limite", type=int, default=5, help="Quantidade máxima de concorrentes (padrão: 5)")
-        comp_parser.add_argument("--margem", type=float, default=35.0, help="Margem líquida alvo (padrão: 35%)")
-        comp_parser.add_argument("--usd", type=float, default=5.50, help="Taxa de câmbio USD/BRL (padrão: 5.50)")
+        comp_parser.add_argument("--margem", type=float, default=35.0, help="Margem líquida alvo (padrão: 35%%)")
+        comp_parser.add_argument("--usd", type=float, default=None, help="Taxa de câmbio USD/BRL (se omitido, obtém cotação comercial em tempo real)")
         comp_parser.add_argument("--buscar-fabricas", action="store_true", help="Busca fornecedores correspondentes no Alibaba")
         comp_parser.add_argument("--exportar", action="store_true", help="Exporta o dossiê em Markdown e Excel")
         comp_args = comp_parser.parse_args(sys.argv[2:])
@@ -119,6 +135,7 @@ def run():
     parser.add_argument("--busca", type=str, default="", help="Termo principal de busca (obrigatório para AliExpress/Alibaba)")
     parser.add_argument("--incluir", type=str, default="", help="Termos obrigatórios separados por vírgula (ex: 'safira, sem logo')")
     parser.add_argument("--excluir", type=str, default="", help="Termos proibidos separados por vírgula (ex: 'quartz, pulseira')")
+    parser.add_argument("--usd", type=float, default=None, help="Taxa de câmbio USD/BRL (se omitido, obtém cotação comercial em tempo real)")
     parser.add_argument("--max-custo", type=float, default=None, help="Custo final máximo em R$")
     parser.add_argument("--margem", type=float, default=40.0, help="Margem líquida desejada em porcentagem (padrão: 40%%)")
     parser.add_argument("--min-vendas", type=int, default=None, help="Vendas mínimas do produto (padrão: valor do .env)")
@@ -192,9 +209,13 @@ def run():
         )
         sys.exit(1)
 
+    rate_info = get_usd_brl_rate(manual_rate=args.usd, fallback_rate=cfg.DEFAULT_USD_BRL)
+    print_currency_info(rate_info)
+    resolved_usd_rate = rate_info.rate
+
     if args.fonte == "alibaba":
         console.print(f"[bold cyan]🏭 Buscando no Alibaba.com (Atacado/B2B) por:[/bold cyan] '{args.busca}'...")
-        client = DirectAlibabaClient(usd_rate=cfg.DEFAULT_USD_BRL)
+        client = DirectAlibabaClient(usd_rate=resolved_usd_rate)
         raw_items = client.search(args.busca, max_items=50)
         if not raw_items:
             console.print("[yellow]Nenhum produto retornado na busca preliminar ou limite atingido.[/yellow]")
@@ -289,7 +310,7 @@ def run():
         tax_res = calculate_import_taxes(
             product_price_brl=item["price"],
             shipping_fee_brl=item.get("shipping", 0.0),
-            usd_brl_rate=cfg.DEFAULT_USD_BRL,
+            usd_brl_rate=resolved_usd_rate,
             icms_rate=cfg.DEFAULT_ICMS_RATE,
             choice_subsidized=args.choice
         )

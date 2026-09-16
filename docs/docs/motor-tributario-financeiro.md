@@ -76,3 +76,21 @@ Preço de Venda Sugerido = Custo Desembarcado / (1 - Comissão Marketplace - Mar
 * **Taxa Fixa para Produtos de Baixo Valor:** O Mercado Livre cobra taxa fixa de aproximadamente R$ 6,00 para itens vendidos abaixo de R$ 79,00.
 * **Margem Líquida (%):** Lucro líquido dividido pelo preço total de venda.
 * **ROI (%):** Lucro líquido dividido pelo capital total investido no lote/produto.
+
+---
+
+## 💵 4. Câmbio Comercial em Tempo Real (AwesomeAPI)
+
+A cotação do dólar oscila constantemente e afeta diretamente:
+1. **O teto de US$ 50 da Remessa Conforme:** Se o dólar sobe, o teto em reais sobe; se desce, produtos próximos à fronteira de R$ 260–280 podem ser tributados a 60% em vez de 20%.
+2. **O custo do lote no Alibaba (B2B):** Cotações FOB em dólar sofrem impacto proporcional em reais no valor final da fatura comercial.
+
+### Como o Sistema Resolve o Câmbio Automaticamente:
+* **API em Tempo Real:** Consulta a API pública da *AwesomeAPI* (`https://economia.awesomeapi.com.br/last/USD-BRL`), sem necessidade de chaves de API nem cadastros.
+* **Cache Inteligente com TTL:** As cotações são armazenadas em `data/currency_cache.json` com validade de 2 horas. As consultas subsequentes são instantâneas (< 1ms).
+* **Resiliência Offline:** Se a internet falhar ou a API estiver fora do ar, o sistema recorre ao cache local anterior ou ao valor padrão do `.env` (`DEFAULT_USD_BRL`), sem nunca travar a CLI.
+* **Simulação Manual (`--usd <valor>`):** Para simular cenários de estresse ou volatilidade (ex: dólar a R$ 6,00), basta informar o parâmetro na linha de comando:
+  ```bash
+  python -m src.cli.main --busca "relogio safira" --usd 6.00
+  ```
+

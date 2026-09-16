@@ -40,6 +40,7 @@ class BenchmarkingEngine:
                 common_kit_items=target.kit_items,
                 market_gaps=["Nenhum concorrente direto encontrado para este termo exato. Oportunidade de pioneirismo!"],
                 target_fob_china_usd=target_fob_usd,
+                usd_rate=self.usd_rate,
                 recommended_china_suppliers=recommended_china_suppliers or []
             )
 
@@ -80,6 +81,7 @@ class BenchmarkingEngine:
             common_kit_items=common_kits,
             market_gaps=market_gaps,
             target_fob_china_usd=target_fob_usd,
+            usd_rate=self.usd_rate,
             recommended_china_suppliers=recommended_china_suppliers or []
         )
 

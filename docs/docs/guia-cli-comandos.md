@@ -75,6 +75,7 @@ python -m src.cli.main --fonte mercado-livre --ml-mode weekly --ml-max-categorie
 | `--choice` | Booleano | `False` | Aplica o subsídio Choice (Imposto de Importação = R$ 0,00, apenas ICMS). |
 | `--incluir` | Texto | `""` | Termos obrigatórios separados por vírgula (ex: `"safira, 316l"`). |
 | `--excluir` | Texto | `""` | Termos proibidos separados por vírgula (ex: `"pulseira, vidro"`). |
+| `--usd` | Decimal | `Tempo Real` | Taxa de câmbio USD/BRL (se omitido, obtém cotação comercial em tempo real via AwesomeAPI). |
 | `--margem` | Decimal | `40.0` | Margem líquida mínima desejada sobre a venda (em %). |
 | `--max-custo` | Decimal | `None` | Custo final máximo tolerado em R$ no Brasil. |
 | `--min-vendas` | Inteiro | `.env` | Quantidade mínima de vendas do produto para passar no filtro. |
@@ -93,4 +94,5 @@ python -m src.cli.main --fonte mercado-livre --ml-mode weekly --ml-max-categorie
 | `--limite` | Inteiro | `5` | Número de concorrentes mapeados no ranking. |
 | `--buscar-fabricas` | Booleano | `False` | Consulta fornecedores industriais equivalentes na China. |
 | `--margem` | Decimal | `35.0` | Margem desejada para cálculo do teto de custo fabril FOB. |
-| `--usd` | Decimal | `5.50` | Cotação do Dólar para cálculo da conversão. |
+| `--usd` | Decimal | `Tempo Real` | Taxa de câmbio USD/BRL (se omitido, obtém cotação comercial em tempo real). |
+

@@ -45,3 +45,12 @@ def test_cli_concorrencia_termo_with_export(monkeypatch, mock_competitors, tmp_p
         run()
         assert os.path.exists("dossie_mercado.md")
         assert os.path.exists("benchmarking_concorrencia.xlsx")
+
+def test_cli_concorrencia_with_manual_usd(monkeypatch, mock_competitors):
+    monkeypatch.setattr(sys, "argv", ["main.py", "concorrencia", "--termo", "oculos", "--usd", "6.25"])
+    with patch("src.competitors.radar.CompetitorRadar.find_competitors", return_value=mock_competitors), \
+         patch("src.cli.main.print_competitor_dossier_terminal") as mock_print:
+        run()
+        assert mock_print.called
+        dossier = mock_print.call_args[0][0]
+        assert dossier.usd_rate == 6.25
