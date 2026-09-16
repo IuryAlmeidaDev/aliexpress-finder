@@ -1,6 +1,6 @@
 # Plano de Implementação: Motor de Inteligência de Concorrência e Benchmarking
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Implementar o subsistema de inteligência de concorrência e benchmarking de mercado no `aliexpress-finder`, permitindo dissecar anúncios (Mercado Livre e lojas virtuais em geral), mapear concorrentes diretos, analisar brechas de kits/preços e conectar com fornecedores da China.
 
@@ -31,7 +31,7 @@
   - `CompetitorProduct(title: str, url: str, store_name: str, platform: str, price_brl: float, original_price_brl: float | None, shipping_type: str, rating: float | None, reviews_count: int | None, sales_volume: str | None, kit_items: list[str], differentials: list[str])`
   - `MarketDossier(...)`
 
-- [ ] **Step 1: Escrever teste que falha para criação e validação dos modelos**
+- [x] **Step 1: Escrever teste que falha para criação e validação dos modelos**
 ```python
 def test_target_product_creation():
     from src.competitors.models import TargetProduct
@@ -47,18 +47,18 @@ def test_target_product_creation():
     assert "estojo" in p.kit_items
 ```
 
-- [ ] **Step 2: Executar teste e verificar que falha**
+- [x] **Step 2: Executar teste e verificar que falha**
 Run: `pytest tests/test_competitor_models.py`
 Expected: FAIL (módulo não encontrado)
 
-- [ ] **Step 3: Implementar `src/competitors/models.py`**
+- [x] **Step 3: Implementar `src/competitors/models.py`**
 Implementar dataclasses tipadas para `TargetProduct`, `CompetitorProduct` e `MarketDossier`.
 
-- [ ] **Step 4: Executar teste e verificar que passa**
+- [x] **Step 4: Executar teste e verificar que passa**
 Run: `pytest tests/test_competitor_models.py`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 `git add src/competitors/ tests/test_competitor_models.py; git commit -m "feat(competitors): add core data models"`
 
 ---
@@ -79,24 +79,24 @@ Expected: PASS
   - `BaseExtractor.extract(url: str, html: str) -> TargetProduct`
   - `get_extractor_for_url(url: str) -> BaseExtractor`
 
-- [ ] **Step 1: Escrever testes unitários para `MercadoLivreExtractor` e `UniversalWebExtractor` com HTML fixtures**
+- [x] **Step 1: Escrever testes unitários para `MercadoLivreExtractor` e `UniversalWebExtractor` com HTML fixtures**
 Testar extração de título, preço, kit e especificações tanto em HTML do ML quanto em HTML padrão com JSON-LD / OpenGraph.
 
-- [ ] **Step 2: Executar teste e verificar que falha**
+- [x] **Step 2: Executar teste e verificar que falha**
 Run: `pytest tests/test_competitor_extractors.py`
 Expected: FAIL
 
-- [ ] **Step 3: Implementar a hierarquia de extratores**
+- [x] **Step 3: Implementar a hierarquia de extratores**
 - `BaseExtractor`: contrato abstrato com `can_handle` e `extract`.
 - `MercadoLivreExtractor`: parsing de OG tags, seletores e meta dados específicos do ML.
 - `UniversalWebExtractor`: parsing de JSON-LD Schema.org (`Product`) e OpenGraph com fallback resiliente.
 - `router.py`: função seletora que escolhe o extrator correto.
 
-- [ ] **Step 4: Executar testes e verificar que passam**
+- [x] **Step 4: Executar testes e verificar que passam**
 Run: `pytest tests/test_competitor_extractors.py`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 `git add src/competitors/extractors/ tests/test_competitor_extractors.py; git commit -m "feat(competitors): implement modular product extractors"`
 
 ---
@@ -112,21 +112,21 @@ Expected: PASS
 - Produces:
   - `CompetitorRadar.find_competitors(query: str, limit: int = 5) -> list[CompetitorProduct]`
 
-- [ ] **Step 1: Escrever teste com mock HTML de busca do Mercado Livre**
+- [x] **Step 1: Escrever teste com mock HTML de busca do Mercado Livre**
 Validar que a lista de concorrentes extrai preço, título, loja e badges (Full / Frete Grátis).
 
-- [ ] **Step 2: Executar teste e verificar falha**
+- [x] **Step 2: Executar teste e verificar falha**
 Run: `pytest tests/test_competitor_radar.py`
 Expected: FAIL
 
-- [ ] **Step 3: Implementar `CompetitorRadar`**
+- [x] **Step 3: Implementar `CompetitorRadar`**
 Implementar o cliente HTTP e parser que consulta a busca do Mercado Livre e extrai os anúncios concorrentes mais vendidos/relevantes.
 
-- [ ] **Step 4: Executar testes e verificar que passam**
+- [x] **Step 4: Executar testes e verificar que passam**
 Run: `pytest tests/test_competitor_radar.py`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 `git add src/competitors/radar.py tests/test_competitor_radar.py; git commit -m "feat(competitors): add competitor discovery radar"`
 
 ---
@@ -142,20 +142,20 @@ Expected: PASS
 - Produces:
   - `BenchmarkingEngine.generate_dossier(target: TargetProduct, competitors: list[CompetitorProduct]) -> MarketDossier`
 
-- [ ] **Step 1: Escrever testes para cálculo de métricas (min, max, média, mediana, gaps de mercado e target FOB price)**
+- [x] **Step 1: Escrever testes para cálculo de métricas (min, max, média, mediana, gaps de mercado e target FOB price)**
 
-- [ ] **Step 2: Executar teste e verificar falha**
+- [x] **Step 2: Executar teste e verificar falha**
 Run: `pytest tests/test_competitor_benchmarking.py`
 Expected: FAIL
 
-- [ ] **Step 3: Implementar `BenchmarkingEngine`**
+- [x] **Step 3: Implementar `BenchmarkingEngine`**
 Calcular estatísticas da concorrência, identificar kits prevalentes e calcular o teto de custo fabril na China para bater o mercado com 40% de margem líquida.
 
-- [ ] **Step 4: Executar testes e verificar que passam**
+- [x] **Step 4: Executar testes e verificar que passam**
 Run: `pytest tests/test_competitor_benchmarking.py`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 `git add src/competitors/benchmarking.py tests/test_competitor_benchmarking.py; git commit -m "feat(competitors): add benchmarking and market opportunity engine"`
 
 ---
@@ -174,19 +174,19 @@ Expected: PASS
   - `export_dossier_markdown(dossier: MarketDossier, filepath: str) -> None`
   - `export_competitors_excel(dossier: MarketDossier, filepath: str) -> None`
 
-- [ ] **Step 1: Escrever teste de exportação gerando arquivos Markdown e Excel**
+- [x] **Step 1: Escrever teste de exportação gerando arquivos Markdown e Excel**
 
-- [ ] **Step 2: Executar teste e verificar falha**
+- [x] **Step 2: Executar teste e verificar falha**
 Run: `pytest tests/test_competitor_export.py`
 Expected: FAIL
 
-- [ ] **Step 3: Implementar renderizadores Rich e exportadores OpenPyXL / Markdown**
+- [x] **Step 3: Implementar renderizadores Rich e exportadores OpenPyXL / Markdown**
 
-- [ ] **Step 4: Executar testes e verificar que passam**
+- [x] **Step 4: Executar testes e verificar que passam**
 Run: `pytest tests/test_competitor_export.py`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 `git add src/competitors/formatters.py src/competitors/exporter.py tests/test_competitor_export.py; git commit -m "feat(competitors): add rich terminal formatters and dossier exporters"`
 
 ---
@@ -204,17 +204,17 @@ Expected: PASS
   - `--exportar`: Salva `dossie_mercado.md` e `benchmarking_concorrencia.xlsx`.
   - `--buscar-fabricas`: Aciona busca no Alibaba/AliExpress para preencher as recomendações de fábrica.
 
-- [ ] **Step 1: Escrever teste de integração da CLI para os argumentos de `concorrencia`**
+- [x] **Step 1: Escrever teste de integração da CLI para os argumentos de `concorrencia`**
 
-- [ ] **Step 2: Executar teste e verificar falha**
+- [x] **Step 2: Executar teste e verificar falha**
 Run: `pytest tests/test_competitor_cli.py`
 Expected: FAIL
 
-- [ ] **Step 3: Atualizar `src/cli/main.py` com `argparse` subparsers para manter compatibilidade com a busca legada**
+- [x] **Step 3: Atualizar `src/cli/main.py` com `argparse` subparsers para manter compatibilidade com a busca legada**
 
-- [ ] **Step 4: Executar toda a suíte de testes do projeto (`pytest`) para garantir regressão zero**
+- [x] **Step 4: Executar toda a suíte de testes do projeto (`pytest`) para garantir regressão zero**
 Run: `pytest`
 Expected: 100% dos testes passando (existentes + novos)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 `git add src/cli/main.py tests/test_competitor_cli.py; git commit -m "feat(cli): integrate competitor intelligence subcommand"`
