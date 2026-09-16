@@ -22,11 +22,98 @@ from src.cli.exporter import export_to_excel
 from src.mercado_livre.client import MercadoLivreClient
 from src.mercado_livre.repository import RadarRepository
 from src.mercado_livre.service import MercadoLivreRadar
+from src.competitors.models import TargetProduct
+from src.competitors.extractors.router import fetch_product_from_url
+from src.competitors.radar import CompetitorRadar
+from src.competitors.benchmarking import BenchmarkingEngine
+from src.competitors.formatters import print_competitor_dossier_terminal
+from src.competitors.exporter import export_dossier_markdown, export_competitors_excel
 from rich.console import Console
 
 console = Console()
 
+def handle_concorrencia(args):
+    cfg = load_config()
+    usd_rate = getattr(args, "usd", cfg.DEFAULT_USD_BRL)
+    target_margin = getattr(args, "margem", 35.0)
+
+    url = getattr(args, "url", None) or getattr(args, "concorrencia_url", "")
+    termo = getattr(args, "termo", None) or getattr(args, "concorrencia_termo", "")
+
+    if url:
+        console.print(f"[bold cyan]🔍 Analisando produto de referência:[/bold cyan] {url}")
+        try:
+            target = fetch_product_from_url(url)
+        except Exception as e:
+            console.print(f"[bold red]Erro ao acessar URL:[/bold red] {e}")
+            sys.exit(1)
+    elif termo:
+        target = TargetProduct(
+            title=termo.title(),
+            reference_price_brl=0.0,
+            clean_query=termo
+        )
+    else:
+        console.print("[bold red]Erro:[/bold red] É necessário fornecer --url ou --termo para a pesquisa de concorrência.")
+        sys.exit(1)
+
+    console.print(f"[bold cyan]📡 Buscando top concorrentes diretos para:[/bold cyan] '{target.clean_query}'...")
+    radar = CompetitorRadar()
+    limit = getattr(args, "limite", 5)
+    competitors = radar.find_competitors(target.clean_query, limit=limit)
+
+    if target.reference_price_brl == 0.0 and competitors:
+        target.reference_price_brl = round(sum(c.price_brl for c in competitors) / len(competitors), 2)
+
+    recommended_suppliers = []
+    if getattr(args, "buscar_fabricas", False):
+        console.print(f"[bold yellow]🏭 Consultando fábricas na China para:[/bold yellow] '{target.clean_query}'...")
+        try:
+            ali_client = DirectAlibabaClient(usd_rate=usd_rate)
+            raw_alibaba = ali_client.search(target.clean_query, max_items=10)
+            for item in raw_alibaba[:3]:
+                price_val = item.get("price", 0.0)
+                price_usd = price_val / usd_rate if usd_rate > 0 else price_val
+                recommended_suppliers.append({
+                    "title": item.get("title", ""),
+                    "price": f"US$ {price_usd:.2f}",
+                    "moq": f"{item.get('moq', 1)} un",
+                    "url": item.get("url", "")
+                })
+        except Exception:
+            pass
+
+    engine = BenchmarkingEngine(
+        usd_rate=usd_rate,
+        target_margin_pct=target_margin / 100.0,
+        marketplace_fee_pct=cfg.DEFAULT_MARKETPLACE_FEE,
+        icms_rate=cfg.DEFAULT_ICMS_RATE
+    )
+    dossier = engine.generate_dossier(target, competitors, recommended_suppliers)
+
+    print_competitor_dossier_terminal(dossier, console=console)
+
+    if getattr(args, "exportar", False):
+        export_dossier_markdown(dossier, "dossie_mercado.md")
+        export_competitors_excel(dossier, "benchmarking_concorrencia.xlsx")
+        console.print("\n[bold green]📊 Dossiê Executivo exportado com sucesso:[/bold green]")
+        console.print("  📄 [cyan]dossie_mercado.md[/cyan]")
+        console.print("  📈 [cyan]benchmarking_concorrencia.xlsx[/cyan]")
+
 def run():
+    if len(sys.argv) > 1 and sys.argv[1] == "concorrencia":
+        comp_parser = argparse.ArgumentParser(description="Análise e Inteligência de Concorrência")
+        comp_parser.add_argument("--url", type=str, default="", help="URL do anúncio/produto para dissecar")
+        comp_parser.add_argument("--termo", type=str, default="", help="Palavra-chave ou nicho de busca")
+        comp_parser.add_argument("--limite", type=int, default=5, help="Quantidade máxima de concorrentes (padrão: 5)")
+        comp_parser.add_argument("--margem", type=float, default=35.0, help="Margem líquida alvo (padrão: 35%)")
+        comp_parser.add_argument("--usd", type=float, default=5.50, help="Taxa de câmbio USD/BRL (padrão: 5.50)")
+        comp_parser.add_argument("--buscar-fabricas", action="store_true", help="Busca fornecedores correspondentes no Alibaba")
+        comp_parser.add_argument("--exportar", action="store_true", help="Exporta o dossiê em Markdown e Excel")
+        comp_args = comp_parser.parse_args(sys.argv[2:])
+        handle_concorrencia(comp_args)
+        return
+
     parser = argparse.ArgumentParser(description="AliExpress Resale Opportunity Finder & Tax Calculator")
     parser.add_argument("--fonte", type=str, choices=["ali", "alibaba", "mercado-livre"], default="ali", help="Fonte: 'ali', 'alibaba' ou radar 'mercado-livre'")
     parser.add_argument("--busca", type=str, default="", help="Termo principal de busca (obrigatório para AliExpress/Alibaba)")
@@ -41,6 +128,9 @@ def run():
     parser.add_argument("--verificados", action="store_true", help="Filtra apenas fornecedores verificados (Verified Supplier) no Alibaba")
     parser.add_argument("--trade-assurance", action="store_true", help="Filtra apenas fornecedores com Trade Assurance no Alibaba")
     parser.add_argument("--exportar", action="store_true", help="Salva os resultados em arquivo Excel")
+    parser.add_argument("--concorrencia-url", type=str, default="", help="Link do anúncio para dissecar concorrentes")
+    parser.add_argument("--concorrencia-termo", type=str, default="", help="Termo para pesquisar concorrentes")
+    parser.add_argument("--buscar-fabricas", action="store_true", help="Busca fornecedores na China correspondentes")
     parser.add_argument("--ml-category", action="append", default=[], help="ID de categoria-folha do Mercado Livre; pode repetir")
     parser.add_argument("--ml-db", type=str, default="", help="Banco SQLite do radar Mercado Livre")
     parser.add_argument("--ml-report-dir", type=str, default="", help="Diretório dos relatórios do radar")
@@ -48,6 +138,10 @@ def run():
     parser.add_argument("--ml-max-candidates", type=int, default=100, help="Máximo de produtos enriquecidos")
     parser.add_argument("--ml-mode", choices=["manual", "weekly"], default="manual", help="Origem da execução do radar")
     args = parser.parse_args()
+
+    if args.concorrencia_url or args.concorrencia_termo:
+        handle_concorrencia(args)
+        return
 
     cfg = load_config()
 
