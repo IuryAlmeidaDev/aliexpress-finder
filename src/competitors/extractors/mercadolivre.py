@@ -15,7 +15,7 @@ class MercadoLivreExtractor(BaseExtractor):
     def extract(self, url: str, html: str) -> TargetProduct:
         soup = BeautifulSoup(html, "html.parser")
         
-        title = self._extract_title(soup)
+        title = self._extract_title(soup, url)
         price = self._extract_price(soup)
         description = self._extract_description(soup)
         
@@ -35,35 +35,46 @@ class MercadoLivreExtractor(BaseExtractor):
             kit_items=kit_items
         )
 
-    def _extract_title(self, soup: BeautifulSoup) -> str:
-        # Try og:title or twitter:title
+    def _extract_title(self, soup: BeautifulSoup, url: str = "") -> str:
+        # 1. Try og:title
         og_title = soup.find("meta", property="og:title")
         if og_title and og_title.get("content"):
             raw_title = og_title["content"].strip()
-            # Clean " - R$ XX,XX" or " | Mercado Livre"
             raw_title = re.sub(r"-\s*R\$\s*[\d\.,]+.*$", "", raw_title)
-            raw_title = re.sub(r"\|\s*MercadoLivre.*$", "", raw_title, flags=re.IGNORECASE).strip()
-            if raw_title:
+            raw_title = re.sub(r"\|\s*Mercado\s*Livre.*$", "", raw_title, flags=re.IGNORECASE).strip()
+            if raw_title and "mercado livre" not in raw_title.lower() and "mercado libre" not in raw_title.lower():
                 return raw_title
 
-        # Try JSON-LD
+        # 2. Try JSON-LD
         for script in soup.find_all("script", type="application/ld+json"):
             try:
                 data = json.loads(script.string)
                 if isinstance(data, dict) and data.get("name"):
-                    return str(data["name"]).strip()
+                    name = str(data["name"]).strip()
+                    if name and "mercado libre" not in name.lower():
+                        return name
             except (json.JSONDecodeError, TypeError):
                 continue
 
-        # Try h1
+        # 3. Try h1
         h1 = soup.find("h1")
         if h1:
-            return h1.get_text(strip=True)
+            h1_text = h1.get_text(strip=True)
+            if h1_text and "mercado libre" not in h1_text.lower():
+                return h1_text
+
+        # 4. Fallback: Extract from URL slug (e.g. /MLB-123456-nome-do-produto-_JM)
+        if url:
+            m = re.search(r"MLB-?\d+-([^/?#]+)", url)
+            if m:
+                slug = m.group(1).replace("-", " ").replace("_JM", "").strip().title()
+                if slug:
+                    return slug
 
         return "Produto Mercado Livre"
 
     def _extract_price(self, soup: BeautifulSoup) -> float:
-        # Try JSON-LD
+        # 1. Try JSON-LD
         for script in soup.find_all("script", type="application/ld+json"):
             try:
                 data = json.loads(script.string)
@@ -76,7 +87,7 @@ class MercadoLivreExtractor(BaseExtractor):
             except (json.JSONDecodeError, TypeError, ValueError):
                 continue
 
-        # Try meta og:title with price: e.g. "Produto - R$ 58,11"
+        # 2. Try meta og:title with price: e.g. "Produto - R$ 58,11"
         og_title = soup.find("meta", property="og:title")
         if og_title and og_title.get("content"):
             m = re.search(r"R\$\s*([\d\.,]+)", og_title["content"])
@@ -87,7 +98,7 @@ class MercadoLivreExtractor(BaseExtractor):
                 except ValueError:
                     pass
 
-        # Try standard ML price elements
+        # 3. Try standard ML price elements
         fraction = soup.find(class_=re.compile(r"andes-money-amount__fraction|price-tag-fraction"))
         if fraction:
             val_str = fraction.get_text(strip=True).replace(".", "").replace(",", ".")

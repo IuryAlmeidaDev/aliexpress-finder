@@ -66,16 +66,13 @@ def test_competitor_radar_parse_html():
     assert "flanela" in c2.kit_items
     assert c2.store_name == "Beta Store"
 
-@patch("requests.get")
-def test_competitor_radar_find_competitors(mock_get):
-    mock_resp = MagicMock()
-    mock_resp.text = MOCK_ML_SEARCH_HTML
-    mock_resp.status_code = 200
-    mock_get.return_value = mock_resp
-
+def test_competitor_radar_find_competitors():
     radar = CompetitorRadar()
-    competitors = radar.find_competitors("oculos quadrado uv400", limit=2)
-
-    assert len(competitors) == 2
-    mock_get.assert_called_once()
-    assert "oculos-quadrado-uv400" in mock_get.call_args[0][0] or "q=" in mock_get.call_args[0][0]
+    mock_items = [
+        CompetitorProduct(title="C1", url="http://1", store_name="S1", platform="ML", price_brl=50.0),
+        CompetitorProduct(title="C2", url="http://2", store_name="S2", platform="ML", price_brl=60.0),
+    ]
+    with patch.object(radar, "_search_direct_mercadolivre", return_value=mock_items) as mock_search:
+        competitors = radar.find_competitors("oculos quadrado uv400", limit=2)
+        assert len(competitors) == 2
+        mock_search.assert_called_once_with("oculos quadrado uv400", 2)
