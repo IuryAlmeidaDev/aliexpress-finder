@@ -33,5 +33,6 @@ htmlcov/
 data/
 reports/
 *.csv
+dossie_*.md
 scratch*
 .superpowers/
