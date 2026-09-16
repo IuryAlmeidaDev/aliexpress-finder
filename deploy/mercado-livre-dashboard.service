@@ -1,0 +1,18 @@
+[Unit]
+Description=Radar de Marcas web dashboard
+After=network-online.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/opt/aliexpress-finder
+EnvironmentFile=/opt/aliexpress-finder/.dashboard.env
+ExecStart=/opt/aliexpress-finder/.venv/bin/uvicorn src.mercado_livre.dashboard_api:create_app --factory --host 127.0.0.1 --port 8091
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/aliexpress-finder/reports
+
+[Install]
+WantedBy=multi-user.target
