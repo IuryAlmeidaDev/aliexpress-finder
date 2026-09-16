@@ -272,6 +272,12 @@ MERCADO_LIVRE_REPORT_DIR=reports
 MERCADO_LIVRE_CATEGORY_IDS=
 ```
 
+Para a autorização inicial, cadastre na aplicação o redirect URI exato `https://localhost.com/redirect`, habilite PKCE e execute o assistente. O Client Secret não aparece na tela durante a digitação e as credenciais são gravadas no arquivo protegido usado pelas renovações automáticas:
+
+```bash
+python -m src.mercado_livre.oauth_setup
+```
+
 Execução autônoma, com descoberta de categorias:
 
 ```bash

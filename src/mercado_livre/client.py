@@ -50,6 +50,8 @@ class MercadoLivreClient:
             return
         try:
             payload = json.loads(self.token_file.read_text(encoding="utf-8"))
+            self.client_id = str(payload.get("client_id") or self.client_id)
+            self.client_secret = str(payload.get("client_secret") or self.client_secret)
             self.access_token = str(payload.get("access_token") or self.access_token)
             self.refresh_token = str(payload.get("refresh_token") or self.refresh_token)
         except (OSError, ValueError, TypeError):
@@ -61,7 +63,12 @@ class MercadoLivreClient:
         self.token_file.parent.mkdir(parents=True, exist_ok=True)
         temporary = self.token_file.with_suffix(self.token_file.suffix + ".tmp")
         temporary.write_text(
-            json.dumps({"access_token": self.access_token, "refresh_token": self.refresh_token}),
+            json.dumps({
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "access_token": self.access_token,
+                "refresh_token": self.refresh_token,
+            }),
             encoding="utf-8",
         )
         try:
