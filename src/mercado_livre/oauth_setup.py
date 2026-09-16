@@ -19,7 +19,7 @@ import requests
 
 AUTH_URL = "https://auth.mercadolivre.com.br/authorization"
 TOKEN_URL = "https://api.mercadolibre.com/oauth/token"
-DEFAULT_REDIRECT_URI = "https://localhost.com/redirect"
+DEFAULT_REDIRECT_URI = "https://api.monvix.me/oauth/mercado-livre/callback"
 
 
 def pkce_pair() -> tuple[str, str]:
