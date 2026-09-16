@@ -8,12 +8,20 @@ import tempfile
 import threading
 import time
 from pathlib import Path
+from dataclasses import asdict
+from datetime import datetime, timezone
+import json
+import secrets
 
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .dashboard_data import MAX_UPLOAD, read_report, reports_in
+from src.arbitrage.engine import ArbitrageEngine
+from src.arbitrage.exporter import export_arbitrage_excel
+from src.finance.currency import get_usd_brl_rate
+from src.config import load_config
 
 
 def create_app(report_dir: str | None = None, access_key: str | None = None, secure: bool | None = None) -> FastAPI:
@@ -165,6 +173,69 @@ def create_app(report_dir: str | None = None, access_key: str | None = None, sec
             if run['id'] == run_id:
                 return FileResponse(directory / run['filename'], filename=run['filename'])
         raise HTTPException(404, 'Relatório não encontrado.')
+
+    @app.get('/radar/api/arbitrage', dependencies=[Depends(authorized)])
+    def get_arbitrage_scans():
+        scans = []
+        for json_file in sorted(directory.glob('arbitrage_*.json'), reverse=True):
+            try:
+                data = json.loads(json_file.read_text(encoding='utf-8'))
+                scans.append(data)
+            except Exception:
+                pass
+        return {'scans': scans}
+
+    @app.post('/radar/api/arbitrage/scan', dependencies=[Depends(authorized)])
+    async def run_arbitrage_scan(request: Request):
+        try:
+            payload = await request.json()
+        except Exception:
+            raise HTTPException(400, 'Payload inválido.')
+
+        query = str(payload.get('query', '')).strip()
+        if not query:
+            raise HTTPException(400, 'Informe um termo para escanear.')
+
+        source = str(payload.get('source', 'alibaba'))
+        limit = min(30, max(3, int(payload.get('limit', 15))))
+        max_moq = int(payload.get('max_moq', 500))
+
+        cfg = load_config()
+        rate_info = get_usd_brl_rate(fallback_rate=cfg.DEFAULT_USD_BRL)
+        engine = ArbitrageEngine(
+            usd_rate=rate_info.rate,
+            icms_rate=cfg.DEFAULT_ICMS_RATE,
+            import_tax_rate=0.60,
+            marketplace_fee_rate=cfg.DEFAULT_MARKETPLACE_FEE
+        )
+
+        try:
+            report = engine.scan(query=query, source=source, max_items=limit, max_moq=max_moq)
+        except Exception as e:
+            raise HTTPException(500, f'Falha ao escanear: {str(e)}')
+
+        scan_id = secrets.token_hex(8)
+        report_data = asdict(report)
+        report_data['id'] = scan_id
+        report_data['date'] = datetime.now(timezone.utc).isoformat()
+        report_data['filename'] = f'arbitrage_{scan_id}.xlsx'
+
+        # Save excel
+        excel_path = directory / report_data['filename']
+        export_arbitrage_excel(report, output_path=excel_path)
+
+        # Save json
+        json_path = directory / f'arbitrage_{scan_id}.json'
+        json_path.write_text(json.dumps(report_data, ensure_ascii=False, indent=2), encoding='utf-8')
+
+        return report_data
+
+    @app.get('/radar/api/arbitrage/download/{scan_id}', dependencies=[Depends(authorized)])
+    def download_arbitrage(scan_id: str):
+        target = directory / f'arbitrage_{scan_id}.xlsx'
+        if target.exists():
+            return FileResponse(target, filename=f'arbitragem_{scan_id}.xlsx')
+        raise HTTPException(404, 'Relatório de arbitragem não encontrado.')
 
     dist = Path(os.getenv('RADAR_DIST_DIR', 'dashboard/dist'))
     if dist.exists():

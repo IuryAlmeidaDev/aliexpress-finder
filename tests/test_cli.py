@@ -225,4 +225,35 @@ def test_cli_ali_with_manual_usd(monkeypatch):
         assert mock_render.called
 
 
+def test_cli_arbitragem(monkeypatch, tmp_path):
+    import sys
+    from unittest.mock import patch
+    from src.cli.main import run
+
+    out_file = str(tmp_path / "arbitragem_test.xlsx")
+    monkeypatch.setattr(sys, "argv", [
+        "main.py", "arbitragem", "--termo", "organizador", "--limite", "2", "--exportar", "--arquivo", out_file
+    ])
+
+    mock_items = [
+        {
+            "id": "1001",
+            "title": "Acrylic Makeup Organizer",
+            "price": 10.0,
+            "moq": 50,
+            "supplier_name": "Supplier A",
+            "is_verified": True,
+            "has_trade_assurance": True,
+            "url": "https://alibaba.com/item/1001"
+        }
+    ]
+
+    with patch("src.arbitrage.engine.DirectAlibabaClient.search", return_value=mock_items), \
+         patch("src.arbitrage.engine.CompetitorRadar.find_competitors", return_value=[]):
+        run()
+
+    assert os.path.exists(out_file)
+
+
+
 

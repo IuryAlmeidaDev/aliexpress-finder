@@ -101,3 +101,48 @@ def test_dashboard_import_and_download(tmp_path):
     assert r.status_code == 200
     assert len(r.content) > 0
 
+
+def test_dashboard_arbitrage_endpoints(tmp_path, monkeypatch):
+    from unittest.mock import patch
+    app = create_app(report_dir=str(tmp_path), access_key="test-key-at-least-24-characters-long", secure=False)
+    client = TestClient(app)
+
+    # Login
+    client.post("/radar/api/session", json={"key": "test-key-at-least-24-characters-long"})
+
+    # Check initially empty scans
+    r = client.get("/radar/api/arbitrage")
+    assert r.status_code == 200
+    assert r.json() == {"scans": []}
+
+    mock_items = [
+        {
+            "id": "101",
+            "title": "Acrylic Makeup Organizer",
+            "price": 10.0,
+            "moq": 50,
+            "supplier_name": "Supplier A",
+            "url": "https://alibaba.com/item/101"
+        }
+    ]
+
+    with patch("src.arbitrage.engine.DirectAlibabaClient.search", return_value=mock_items), \
+         patch("src.arbitrage.engine.CompetitorRadar.find_competitors", return_value=[]):
+        r = client.post("/radar/api/arbitrage/scan", json={"query": "organizador", "source": "alibaba", "limit": 2})
+
+    assert r.status_code == 200
+    scan = r.json()
+    assert scan["total_scanned"] == 1
+    assert scan["blue_ocean_count"] == 1
+    scan_id = scan["id"]
+
+    # Check scan is returned in list
+    r = client.get("/radar/api/arbitrage")
+    assert r.status_code == 200
+    assert len(r.json()["scans"]) == 1
+
+    # Download arbitrage excel
+    r = client.get(f"/radar/api/arbitrage/download/{scan_id}")
+    assert r.status_code == 200
+    assert len(r.content) > 0
+

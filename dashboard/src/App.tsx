@@ -8,15 +8,18 @@ import { ProductTable } from "@/components/ProductTable"
 import { ProductDrawer } from "@/components/ProductDrawer"
 import { UploadModal } from "@/components/UploadModal"
 import { AuthGate } from "@/components/AuthGate"
+import { ArbitrageView } from "@/components/ArbitrageView"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { RunReport, Product, DashboardDataResponse } from "@/types"
+import { RunReport, Product, DashboardDataResponse, ArbitrageReport } from "@/types"
 import { AlertCircle, RefreshCw, BarChart2, ScatterChart, Layers } from "lucide-react"
 
 export const App: React.FC = () => {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null)
+  const [activeTab, setActiveTab] = useState<"radar" | "arbitrage">("radar")
   const [runs, setRuns] = useState<RunReport[]>([])
+  const [arbitrageScans, setArbitrageScans] = useState<ArbitrageReport[]>([])
   const [selectedRunId, setSelectedRunId] = useState<string>("")
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string>("")
@@ -43,24 +46,33 @@ export const App: React.FC = () => {
     }
   }, [])
 
-  // Fetch radar data
+  // Fetch radar and arbitrage data
   const fetchData = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true)
     else setLoading(true)
     setError(null)
 
     try {
-      const res = await fetch("/radar/api/data")
-      if (res.status === 401) {
+      const [radarRes, arbRes] = await Promise.all([
+        fetch("/radar/api/data"),
+        fetch("/radar/api/arbitrage"),
+      ])
+
+      if (radarRes.status === 401) {
         setAuthenticated(false)
         return
       }
-      if (!res.ok) {
+      if (!radarRes.ok) {
         throw new Error("Não foi possível carregar os dados do Radar.")
       }
 
-      const data: DashboardDataResponse = await res.json()
+      const data: DashboardDataResponse = await radarRes.json()
       setRuns(data.runs || [])
+
+      if (arbRes.ok) {
+        const arbData = await arbRes.json()
+        setArbitrageScans(arbData.scans || [])
+      }
 
       // Default select the latest run
       if (data.runs && data.runs.length > 0) {
@@ -105,6 +117,7 @@ export const App: React.FC = () => {
     } finally {
       setAuthenticated(false)
       setRuns([])
+      setArbitrageScans([])
     }
   }
 
@@ -142,6 +155,8 @@ export const App: React.FC = () => {
         onRefresh={() => fetchData(true)}
         onLogout={handleLogout}
         refreshing={refreshing}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
 
       {/* Main Content Area */}
@@ -178,60 +193,66 @@ export const App: React.FC = () => {
           </Alert>
         )}
 
-        {/* Empty state when no runs */}
-        {!loading && !error && runs.length === 0 && (
-          <div className="bg-white border border-[#dbe4df] rounded-xl p-12 text-center max-w-lg mx-auto mt-12 shadow-sm">
-            <div className="w-12 h-12 rounded-xl bg-[#e8f1ec] text-[#176449] flex items-center justify-center mx-auto mb-3">
-              <Layers className="w-6 h-6" />
-            </div>
-            <h3 className="font-bold text-lg text-[#111916]">Nenhuma Coleta Disponível</h3>
-            <p className="text-xs text-[#5a6e65] mt-1 mb-6">
-              Ainda não há relatórios XLSX registrados. Você pode importar uma planilha manualmente
-              ou aguardar o agendamento semanal do coletor no VPS.
-            </p>
-            <Button
-              onClick={() => setUploadOpen(true)}
-              className="bg-[#176449] hover:bg-[#12523b] text-white text-xs"
-            >
-              Importar Primeiro Relatório XLSX
-            </Button>
-          </div>
-        )}
-
-        {/* Loaded Data View */}
-        {!loading && currentRun && (
+        {/* TAB 1: RADAR MERCADO LIVRE */}
+        {!loading && activeTab === "radar" && (
           <>
-            {/* 1. Executive KPIs */}
-            <KpiRail products={currentProducts} runCount={runs.length} />
+            {runs.length === 0 ? (
+              <div className="bg-white border border-[#dbe4df] rounded-xl p-12 text-center max-w-lg mx-auto mt-12 shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-[#e8f1ec] text-[#176449] flex items-center justify-center mx-auto mb-3">
+                  <Layers className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-lg text-[#111916]">Nenhuma Coleta Disponível</h3>
+                <p className="text-xs text-[#5a6e65] mt-1 mb-6">
+                  Ainda não há relatórios XLSX registrados. Você pode importar uma planilha manualmente
+                  ou aguardar o agendamento semanal do coletor no VPS.
+                </p>
+                <Button
+                  onClick={() => setUploadOpen(true)}
+                  className="bg-[#176449] hover:bg-[#12523b] text-white text-xs"
+                >
+                  Importar Primeiro Relatório XLSX
+                </Button>
+              </div>
+            ) : (
+              <>
+                {/* 1. Executive KPIs */}
+                <KpiRail products={currentProducts} runCount={runs.length} />
 
-            {/* 2. Visual Charts Row: Scatter Matrix & Category Leaderboard */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <OpportunityMatrix
+                {/* 2. Visual Charts Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <OpportunityMatrix
+                      products={currentProducts}
+                      onSelectProduct={handleSelectProduct}
+                    />
+                  </div>
+                  <div className="lg:col-span-1 space-y-6">
+                    <CategoryChart
+                      products={currentProducts}
+                      selectedCategory={selectedCategory}
+                      onSelectCategory={setSelectedCategory}
+                    />
+                  </div>
+                </div>
+
+                {/* 3. Temporal Evolution / Distribution */}
+                <TrendChart runs={runs} currentProducts={currentProducts} />
+
+                {/* 4. Complete Filterable Table */}
+                <ProductTable
                   products={currentProducts}
                   onSelectProduct={handleSelectProduct}
-                />
-              </div>
-              <div className="lg:col-span-1 space-y-6">
-                <CategoryChart
-                  products={currentProducts}
                   selectedCategory={selectedCategory}
                   onSelectCategory={setSelectedCategory}
                 />
-              </div>
-            </div>
-
-            {/* 3. Temporal Evolution / Distribution */}
-            <TrendChart runs={runs} currentProducts={currentProducts} />
-
-            {/* 4. Complete Filterable Table */}
-            <ProductTable
-              products={currentProducts}
-              onSelectProduct={handleSelectProduct}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
-            />
+              </>
+            )}
           </>
+        )}
+
+        {/* TAB 2: ARBITRAGEM CHINA × MERCADO LIVRE */}
+        {!loading && activeTab === "arbitrage" && (
+          <ArbitrageView initialScans={arbitrageScans} />
         )}
       </main>
 

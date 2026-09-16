@@ -29,6 +29,9 @@ from src.competitors.radar import CompetitorRadar
 from src.competitors.benchmarking import BenchmarkingEngine
 from src.competitors.formatters import print_competitor_dossier_terminal
 from src.competitors.exporter import export_dossier_markdown, export_competitors_excel
+from src.arbitrage.engine import ArbitrageEngine
+from src.arbitrage.exporter import export_arbitrage_excel
+from src.arbitrage.formatters import print_arbitrage_report_terminal
 from rich.console import Console
 
 console = Console()
@@ -116,7 +119,54 @@ def handle_concorrencia(args):
         console.print("  📄 [cyan]dossie_mercado.md[/cyan]")
         console.print("  📈 [cyan]benchmarking_concorrencia.xlsx[/cyan]")
 
+def handle_arbitragem(args):
+    cfg = load_config()
+    manual_usd = getattr(args, "usd", None)
+    rate_info = get_usd_brl_rate(manual_rate=manual_usd, fallback_rate=cfg.DEFAULT_USD_BRL)
+    print_currency_info(rate_info)
+    usd_rate = rate_info.rate
+
+    termo = getattr(args, "termo", "") or getattr(args, "busca", "")
+    if not termo:
+        console.print("[bold red]Erro:[/bold red] Forneça um termo de busca com --termo (ex: --termo 'organizador acrilico')")
+        sys.exit(1)
+
+    fonte = getattr(args, "fonte", "alibaba")
+    limite = getattr(args, "limite", 15)
+    max_moq = getattr(args, "max_moq", 500)
+
+    console.print(f"[bold cyan]🔎 Iniciando Radar de Arbitragem:[/bold cyan] Buscando '{termo}' no [yellow]{fonte.upper()}[/yellow] e cruzando com [green]Mercado Livre[/green]...")
+
+    engine = ArbitrageEngine(
+        usd_rate=usd_rate,
+        icms_rate=cfg.DEFAULT_ICMS_RATE,
+        import_tax_rate=0.60,
+        marketplace_fee_rate=cfg.DEFAULT_MARKETPLACE_FEE
+    )
+    report = engine.scan(query=termo, source=fonte, max_items=limite, max_moq=max_moq)
+
+    print_arbitrage_report_terminal(report, console=console)
+
+    if getattr(args, "exportar", False) or getattr(args, "arquivo", None):
+        out_file = getattr(args, "arquivo", "arbitragem_alibaba_ml.xlsx")
+        export_arbitrage_excel(report, output_path=out_file)
+        console.print(f"\n[bold green]📊 Planilha de Arbitragem exportada com sucesso:[/bold green] [cyan]{out_file}[/cyan]")
+
 def run():
+    if len(sys.argv) > 1 and sys.argv[1] == "arbitragem":
+        arb_parser = argparse.ArgumentParser(description="Radar de Arbitragem: China Wholesale x Mercado Livre")
+        arb_parser.add_argument("--termo", type=str, default="", help="Termo principal de busca ou nicho")
+        arb_parser.add_argument("--busca", type=str, default="", help="Alias para --termo")
+        arb_parser.add_argument("--fonte", type=str, choices=["alibaba", "ali", "ambos"], default="alibaba", help="Origem: 'alibaba' (B2B), 'ali' (AliExpress B2C) ou 'ambos'")
+        arb_parser.add_argument("--limite", type=int, default=15, help="Quantidade máxima de itens a analisar (padrão: 15)")
+        arb_parser.add_argument("--max-moq", type=int, default=500, help="Quantidade mínima de pedido máxima permitida no Alibaba")
+        arb_parser.add_argument("--usd", type=float, default=None, help="Taxa de câmbio USD/BRL")
+        arb_parser.add_argument("--exportar", action="store_true", help="Exporta os resultados para planilha Excel")
+        arb_parser.add_argument("--arquivo", type=str, default="arbitragem_alibaba_ml.xlsx", help="Caminho do arquivo Excel a ser exportado")
+        arb_args = arb_parser.parse_args(sys.argv[2:])
+        handle_arbitragem(arb_args)
+        return
+
     if len(sys.argv) > 1 and sys.argv[1] == "concorrencia":
         comp_parser = argparse.ArgumentParser(description="Análise e Inteligência de Concorrência")
         comp_parser.add_argument("--url", type=str, default="", help="URL do anúncio/produto para dissecar")
