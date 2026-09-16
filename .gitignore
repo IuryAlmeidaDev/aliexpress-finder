@@ -36,3 +36,11 @@ reports/
 dossie_*.md
 scratch*
 .superpowers/
+
+# Docusaurus & Node
+node_modules/
+.docusaurus/
+docs/node_modules/
+docs/.docusaurus/
+docs/build/
+.cache-loader

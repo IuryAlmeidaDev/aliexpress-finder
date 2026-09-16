@@ -1,0 +1,30 @@
+/**
+ * Custom CSS for Docusaurus documentation.
+ */
+
+:root {
+  --ifm-color-primary: #ff4747;
+  --ifm-color-primary-dark: #e63535;
+  --ifm-color-primary-darker: #d92626;
+  --ifm-color-primary-darkest: #b31a1a;
+  --ifm-color-primary-light: #ff6666;
+  --ifm-color-primary-lighter: #ff7575;
+  --ifm-color-primary-lightest: #ffa3a3;
+  --ifm-code-font-size: 92%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #ff6b6b;
+  --ifm-color-primary-dark: #ff4747;
+  --ifm-color-primary-darker: #ff3333;
+  --ifm-color-primary-darkest: #e60000;
+  --ifm-color-primary-light: #ff8585;
+  --ifm-color-primary-lighter: #ff9999;
+  --ifm-color-primary-lightest: #ffd6d6;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+.table-responsive {
+  margin: 1.5rem 0;
+}
