@@ -121,8 +121,20 @@ def run(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--token-file", default="data/mercado_livre_token.json")
     args = parser.parse_args(argv)
 
-    client_id = args.client_id.strip() or input("Client ID (App ID): ").strip()
-    client_secret = getpass.getpass("Client Secret: ").strip()
+    stored: dict[str, Any] = {}
+    token_path = Path(args.token_file)
+    if token_path.exists():
+        try:
+            stored = json.loads(token_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, TypeError):
+            stored = {}
+
+    client_id = args.client_id.strip() or str(stored.get("client_id") or "").strip()
+    if not client_id:
+        client_id = input("Client ID (App ID): ").strip()
+    client_secret = str(stored.get("client_secret") or "").strip()
+    if not client_secret:
+        client_secret = getpass.getpass("Client Secret: ").strip()
     if not client_id or not client_secret:
         print("Client ID e Client Secret são obrigatórios.", file=sys.stderr)
         return 1
