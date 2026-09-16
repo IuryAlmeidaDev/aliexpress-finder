@@ -187,4 +187,19 @@ def test_cli_run_choice_mode(monkeypatch):
         assert abs(records[0]["Custo Final (R$)"] - 162.82) <= 0.02
 
 
+def test_cli_mercado_livre_does_not_require_search_term(monkeypatch, tmp_path):
+    import sys
+    from unittest.mock import patch
+    from src.cli.main import run
+    from src.mercado_livre.service import RadarRunResult
+
+    monkeypatch.setattr(sys, "argv", [
+        "main.py", "--fonte", "mercado-livre", "--ml-db", str(tmp_path / "radar.db")
+    ])
+    result = RadarRunResult("run1", "success", "report.xlsx", 3, 1, [])
+    with patch("src.cli.main.MercadoLivreRadar.run", return_value=result) as mock_run:
+        run()
+    assert mock_run.called
+
+
 

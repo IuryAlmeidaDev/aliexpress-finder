@@ -255,6 +255,37 @@ MIN_SALES_COUNT=10
    python -m src.cli.main --fonte alibaba --busca "smart ring" --max-moq 30 --trade-assurance --margem 60 --exportar
    ```
 
+#### 🅲 Radar Mercado Livre para Marca Própria
+
+O radar não compara preços com fornecedores estrangeiros. Ele descobre produtos já validados no Brasil e explica quais podem merecer investigação para desenvolver uma marca própria. A nota de demanda e a nota de potencial de marca são independentes, acompanhadas pela cobertura dos dados e pelas evidências encontradas.
+
+Configure uma aplicação autorizada do Mercado Livre no `.env`:
+
+```ini
+MERCADO_LIVRE_ACCESS_TOKEN=
+MERCADO_LIVRE_CLIENT_ID=
+MERCADO_LIVRE_CLIENT_SECRET=
+MERCADO_LIVRE_REFRESH_TOKEN=
+MERCADO_LIVRE_TOKEN_FILE=data/mercado_livre_token.json
+MERCADO_LIVRE_DB_PATH=data/mercado_livre_radar.db
+MERCADO_LIVRE_REPORT_DIR=reports
+MERCADO_LIVRE_CATEGORY_IDS=
+```
+
+Execução autônoma, com descoberta de categorias:
+
+```bash
+python -m src.cli.main --fonte mercado-livre
+```
+
+Execução dirigida a categorias-folha específicas:
+
+```bash
+python -m src.cli.main --fonte mercado-livre --ml-category MLB1234 --ml-category MLB5678
+```
+
+Cada rodada gera um Excel com as abas `Oportunidades`, `Investigar`, `Evidências` e `Execução`, além de manter o histórico em SQLite. A primeira rodada informa que ainda não existe histórico semanal comparável. O timer disponível em `deploy/` roda às segundas-feiras, às 07:00 no horário de São Paulo, e usa o mesmo comando da execução manual.
+
 ---
 
 ## 🧮 Metodologia de Cálculo Financeiro e Tributário
@@ -317,7 +348,7 @@ $$\text{ROI do Lote (\%)} = \left(\frac{\text{Lucro Líquido do Lote}}{\text{Inv
 
 ## 🧪 Qualidade de Código e Testes Automatizados
 
-O projeto mantém **100% de cobertura funcional** com 55 testes automatizados (unitários, de borda e de integração ponta a ponta).
+O projeto mantém uma suíte funcional com 66 testes automatizados (unitários, de borda e de integração ponta a ponta).
 
 ### Executar Toda a Suíte de Testes
 ```bash
@@ -337,6 +368,9 @@ python -m pytest tests/test_taxes.py tests/test_wholesale_finance.py -v
 
 # 4. Testes de filtros semânticos e anti-pegadinha
 python -m pytest tests/test_filters.py tests/test_alibaba_filters.py -v
+
+# 5. Radar Mercado Livre: cliente, pontuação, histórico e integração
+python -m pytest tests/test_mercado_livre_*.py -v
 ```
 
 ---

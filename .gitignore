@@ -30,6 +30,8 @@ ENV/
 htmlcov/
 
 *.xlsx
+data/
+reports/
 *.csv
 scratch*
 .superpowers/

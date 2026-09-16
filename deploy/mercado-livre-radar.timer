@@ -1,0 +1,11 @@
+[Unit]
+Description=Executa o Radar Mercado Livre toda segunda-feira
+
+[Timer]
+OnCalendar=Mon *-*-* 07:00:00 America/Sao_Paulo
+Persistent=true
+RandomizedDelaySec=10m
+Unit=mercado-livre-radar.service
+
+[Install]
+WantedBy=timers.target

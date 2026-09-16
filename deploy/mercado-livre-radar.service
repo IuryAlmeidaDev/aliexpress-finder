@@ -1,0 +1,14 @@
+[Unit]
+Description=Radar semanal de oportunidades de marca no Mercado Livre
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/opt/aliexpress-finder
+EnvironmentFile=/opt/aliexpress-finder/.env
+ExecStart=/usr/bin/flock -n /opt/aliexpress-finder/data/radar.lock /opt/aliexpress-finder/.venv/bin/python -m src.cli.main --fonte mercado-livre --ml-mode weekly
+
+[Install]
+WantedBy=multi-user.target

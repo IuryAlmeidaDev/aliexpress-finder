@@ -9,6 +9,7 @@ def test_default_config():
     assert cfg.DEFAULT_TARGET_MARGIN == 0.40
     assert cfg.MIN_STORE_RATING == 4.5
     assert cfg.MIN_SALES_COUNT == 10
+    assert cfg.MERCADO_LIVRE_SITE_ID == "MLB"
 
 def test_load_config_from_env(monkeypatch):
     monkeypatch.setenv("DEFAULT_USD_BRL", "6.00")
@@ -36,4 +37,5 @@ def test_load_config_empty_env_vars(monkeypatch):
     assert cfg.DEFAULT_TARGET_MARGIN == 0.40
     assert cfg.MIN_STORE_RATING == 4.5
     assert cfg.MIN_SALES_COUNT == 10
+    assert cfg.MERCADO_LIVRE_ACCESS_TOKEN == ""
 

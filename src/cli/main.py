@@ -19,14 +19,17 @@ from src.finance.margins import simulate_resale
 from src.finance.wholesale import calculate_wholesale_batch_costs, simulate_wholesale_resale
 from src.cli.formatters import render_results_table, render_alibaba_table
 from src.cli.exporter import export_to_excel
+from src.mercado_livre.client import MercadoLivreClient
+from src.mercado_livre.repository import RadarRepository
+from src.mercado_livre.service import MercadoLivreRadar
 from rich.console import Console
 
 console = Console()
 
 def run():
     parser = argparse.ArgumentParser(description="AliExpress Resale Opportunity Finder & Tax Calculator")
-    parser.add_argument("--fonte", type=str, choices=["ali", "alibaba"], default="ali", help="Fonte de dados: 'ali' (AliExpress B2C) ou 'alibaba' (Alibaba B2B Atacado)")
-    parser.add_argument("--busca", type=str, required=True, help="Termo principal de busca (ex: 'relogio automatico')")
+    parser.add_argument("--fonte", type=str, choices=["ali", "alibaba", "mercado-livre"], default="ali", help="Fonte: 'ali', 'alibaba' ou radar 'mercado-livre'")
+    parser.add_argument("--busca", type=str, default="", help="Termo principal de busca (obrigatório para AliExpress/Alibaba)")
     parser.add_argument("--incluir", type=str, default="", help="Termos obrigatórios separados por vírgula (ex: 'safira, sem logo')")
     parser.add_argument("--excluir", type=str, default="", help="Termos proibidos separados por vírgula (ex: 'quartz, pulseira')")
     parser.add_argument("--max-custo", type=float, default=None, help="Custo final máximo em R$")
@@ -38,9 +41,55 @@ def run():
     parser.add_argument("--verificados", action="store_true", help="Filtra apenas fornecedores verificados (Verified Supplier) no Alibaba")
     parser.add_argument("--trade-assurance", action="store_true", help="Filtra apenas fornecedores com Trade Assurance no Alibaba")
     parser.add_argument("--exportar", action="store_true", help="Salva os resultados em arquivo Excel")
+    parser.add_argument("--ml-category", action="append", default=[], help="ID de categoria-folha do Mercado Livre; pode repetir")
+    parser.add_argument("--ml-db", type=str, default="", help="Banco SQLite do radar Mercado Livre")
+    parser.add_argument("--ml-report-dir", type=str, default="", help="Diretório dos relatórios do radar")
+    parser.add_argument("--ml-max-categories", type=int, default=30, help="Máximo de categorias por rodada")
+    parser.add_argument("--ml-max-candidates", type=int, default=100, help="Máximo de produtos enriquecidos")
+    parser.add_argument("--ml-mode", choices=["manual", "weekly"], default="manual", help="Origem da execução do radar")
     args = parser.parse_args()
 
     cfg = load_config()
+
+    if args.fonte == "mercado-livre":
+        categories = args.ml_category or [
+            value.strip() for value in cfg.MERCADO_LIVRE_CATEGORY_IDS.split(",") if value.strip()
+        ]
+        db_path = args.ml_db or cfg.MERCADO_LIVRE_DB_PATH
+        report_dir = args.ml_report_dir or cfg.MERCADO_LIVRE_REPORT_DIR
+        console.print("[bold cyan]Radar Mercado Livre:[/bold cyan] buscando demanda e potencial de marca própria...")
+        with RadarRepository(db_path) as repository:
+            radar = MercadoLivreRadar(
+                client=MercadoLivreClient(
+                    cfg.MERCADO_LIVRE_ACCESS_TOKEN,
+                    cfg.MERCADO_LIVRE_SITE_ID,
+                    client_id=cfg.MERCADO_LIVRE_CLIENT_ID,
+                    client_secret=cfg.MERCADO_LIVRE_CLIENT_SECRET,
+                    refresh_token=cfg.MERCADO_LIVRE_REFRESH_TOKEN,
+                    token_file=cfg.MERCADO_LIVRE_TOKEN_FILE,
+                ),
+                repository=repository,
+                report_dir=report_dir,
+                max_categories=max(1, args.ml_max_categories),
+                max_candidates=max(1, args.ml_max_candidates),
+            )
+            result = radar.run(mode=args.ml_mode, category_ids=categories or None)
+        if result.status == "failed":
+            console.print(f"[bold red]Falha no radar:[/bold red] {' | '.join(result.errors)}")
+            sys.exit(1)
+        color = "yellow" if result.status == "partial" else "green"
+        console.print(
+            f"[{color}]Coleta {result.status}: {result.products} produtos, "
+            f"{result.opportunities} oportunidades prioritárias.[/{color}]"
+        )
+        if result.errors:
+            console.print(f"[yellow]Cobertura parcial: {len(result.errors)} ocorrência(s).[/yellow]")
+        console.print(f"[bold green]Relatório:[/bold green] {result.report_path}")
+        return
+
+    if not args.busca.strip():
+        parser.error("--busca é obrigatório para as fontes 'ali' e 'alibaba'")
+
     target_margin = args.margem / 100.0
     if target_margin + cfg.DEFAULT_MARKETPLACE_FEE >= 1.0:
         console.print(
