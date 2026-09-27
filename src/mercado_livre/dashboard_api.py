@@ -24,19 +24,33 @@ from src.finance.currency import get_usd_brl_rate
 from src.config import load_config
 
 
-def create_app(report_dir: str | None = None, access_key: str | None = None, secure: bool | None = None) -> FastAPI:
+def create_app(
+    report_dir: str | None = None,
+    access_key: str | None = None,
+    secure: bool | None = None,
+    auth_disabled: bool | None = None,
+) -> FastAPI:
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     directory = Path(report_dir or os.getenv('RADAR_REPORT_DIR', 'reports'))
     directory.mkdir(parents=True, exist_ok=True)
     
+    if auth_disabled is None:
+        env_auth_disabled = os.getenv('RADAR_AUTH_DISABLED', '').lower() in ('true', '1', 'yes')
+        env_no_key = os.getenv('RADAR_DASHBOARD_KEY', '') in ('', 'none', 'disabled')
+        auth_disabled = env_auth_disabled or (access_key is None and env_no_key)
+
     secret = access_key or os.getenv('RADAR_DASHBOARD_KEY', '')
-    if not secret:
-        env = os.getenv('RADAR_ENV', 'development')
-        if env == 'production':
-            raise RuntimeError('RADAR_DASHBOARD_KEY deve conter pelo menos 24 caracteres em produção.')
-        secret = 'radar-dev-access-key-minimum-24-chars'
-    elif len(secret) < 24:
-        raise RuntimeError('RADAR_DASHBOARD_KEY deve conter pelo menos 24 caracteres.')
+    if not auth_disabled:
+        if not secret:
+            env = os.getenv('RADAR_ENV', 'development')
+            if env == 'production':
+                raise RuntimeError('RADAR_DASHBOARD_KEY deve conter pelo menos 24 caracteres em produção.')
+            secret = 'radar-dev-access-key-minimum-24-chars'
+        elif len(secret) < 24:
+            raise RuntimeError('RADAR_DASHBOARD_KEY deve conter pelo menos 24 caracteres.')
+    else:
+        if not secret:
+            secret = 'radar-public-access-no-auth-bypass-key'
 
     lock = threading.Lock()
     attempts: dict[str, list[float]] = {}
@@ -53,6 +67,8 @@ def create_app(report_dir: str | None = None, access_key: str | None = None, sec
         return response
 
     def check_cookie_valid(cookie: str) -> bool:
+        if auth_disabled:
+            return True
         if not cookie:
             return False
         try:
@@ -67,18 +83,24 @@ def create_app(report_dir: str | None = None, access_key: str | None = None, sec
             return False
 
     def authorized(request: Request):
+        if auth_disabled:
+            return
         cookie = request.cookies.get('radar_session', '')
         if not check_cookie_valid(cookie):
             raise HTTPException(401, 'Entre com sua chave de acesso ao painel.')
 
     @app.get('/radar/api/session')
     def get_session(request: Request):
+        if auth_disabled:
+            return {'authenticated': True}
         cookie = request.cookies.get('radar_session', '')
         is_auth = check_cookie_valid(cookie)
         return {'authenticated': is_auth}
 
     @app.post('/radar/api/session')
     async def session(request: Request):
+        if auth_disabled:
+            return JSONResponse({'ok': True})
         if int(request.headers.get('content-length', 0)) > 2048:
             raise HTTPException(413, 'Requisição muito grande.')
         ip = request.client.host if request.client else 'unknown'

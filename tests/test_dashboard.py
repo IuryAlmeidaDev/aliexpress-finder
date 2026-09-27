@@ -146,3 +146,20 @@ def test_dashboard_arbitrage_endpoints(tmp_path, monkeypatch):
     assert r.status_code == 200
     assert len(r.content) > 0
 
+
+def test_dashboard_direct_access_auth_disabled(tmp_path):
+    # App created with auth_disabled=True should allow all endpoints without login
+    app = create_app(report_dir=str(tmp_path), auth_disabled=True, secure=False)
+    client = TestClient(app)
+
+    # Initial session reports authenticated directly
+    r = client.get("/radar/api/session")
+    assert r.status_code == 200
+    assert r.json() == {"authenticated": True}
+
+    # Data endpoint accessible immediately without 401
+    r = client.get("/radar/api/data")
+    assert r.status_code == 200
+    assert "runs" in r.json()
+
+
