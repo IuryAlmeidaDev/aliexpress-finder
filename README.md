@@ -136,11 +136,14 @@ python -m src.cli.main concorrencia --termo "relogio safira cronografo" --buscar
 
 ### Radar de Tendências:
 ```bash
-# Coleta diária de snapshots de produtos na China:
+# Coleta diária de snapshots de produtos na China (AliExpress + Alibaba):
 python -m src.cli.main trends --collect
 
 # Análise de velocidade de crescimento e gap no Mercado Livre:
-python -m src.cli.main trends --analyze --min-score 60 --exportar
+python -m src.cli.main trends --analyze
+
+# Limpeza periódica de dados históricos antigos (> 90 dias):
+python -m src.cli.main trends --cleanup
 ```
 
 ---

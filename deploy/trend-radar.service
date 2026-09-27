@@ -8,6 +8,7 @@ Type=oneshot
 User=ubuntu
 WorkingDirectory=/opt/aliexpress-finder
 EnvironmentFile=/opt/aliexpress-finder/.env
+ExecStartPre=/usr/bin/mkdir -p /opt/aliexpress-finder/data
 ExecStart=/usr/bin/flock -n /opt/aliexpress-finder/data/trends.lock /opt/aliexpress-finder/.venv/bin/python -m src.cli.main trends --collect
 
 [Install]
