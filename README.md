@@ -1,13 +1,13 @@
 # AliExpress & Alibaba Resale Opportunity Finder & Tax Calculator 🇧🇷
 
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/Tests-93%20passed%20(100%25)-brightgreen?logo=pytest&logoColor=white)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-169%20passed%20(100%25)-brightgreen?logo=pytest&logoColor=white)](tests/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
 [![Documentation](https://img.shields.io/badge/Docs-Docusaurus%203-orange?logo=docusaurus&logoColor=white)](docs/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-success)]()
 
-> **Ferramenta CLI profissional para mineração de produtos, filtragem inteligente, inteligência de concorrência e cálculo de viabilidade financeira de importações no AliExpress (Varejo/B2C) e Alibaba (Atacado/B2B), com foco no mercado brasileiro de revenda (Mercado Livre, Shopee, Amazon Brasil e e-commerce próprio).**
+> **Ferramenta CLI profissional para mineração de produtos, filtragem inteligente, inteligência de concorrência, radar de tendências e cálculo de viabilidade financeira de importações no AliExpress (Varejo/B2C) e Alibaba (Atacado/B2B), com foco no mercado brasileiro de revenda (Mercado Livre, Shopee, Amazon Brasil e e-commerce próprio).**
 
 ---
 
@@ -55,13 +55,13 @@ python -m src.cli.main concorrencia --url "https://produto.mercadolivre.com.br/M
 
 ---
 
-## 🏛️ As 4 Grandes Frentes do Sistema
+## 🏛️ As 5 Grandes Frentes do Sistema
 
 ```mermaid
 flowchart LR
-    A["Prospecção China<br/>(AliExpress / Alibaba)"] --> B["Motor Tributário<br/>(Remessa Conforme / RTS / ICMS)"]
+    A["Prospecção China<br/>(AliExpress / Alibaba / Tendências)"] --> B["Motor Tributário<br/>(Remessa Conforme / RTS / ICMS)"]
     C["Mercado Nacional<br/>(Radar ML / Concorrência)"] --> B
-    B --> D["Dossiê de Decisão<br/>(Terminal / XLSX / Markdown)"]
+    B --> D["Dossiê de Decisão<br/>(Terminal / XLSX / Markdown / Dashboard)"]
 ```
 
 ### 1. 🛍️ AliExpress B2C (Validação Rápida & Amostras)
@@ -80,12 +80,18 @@ flowchart LR
 * **Banco SQLite Histórico:** Persistência em `data/mercado_livre_radar.db` para acompanhar tendências semanais.
 * **Score de Oportunidade:** Algoritmo ponderado para produtos ideais para substituição por marca própria (*Private Label*).
 
-### 4. ⚔️ Inteligência de Concorrência & Benchmarking *(Novo!)*
+### 4. ⚔️ Inteligência de Concorrência & Benchmarking
 * **Extrator Modular Universal:** Dissecar links de produtos no Mercado Livre ou **qualquer e-commerce próprio** (Shopify, Nuvemshop, WooCommerce, etc.) via JSON-LD e OpenGraph.
 * **Radar de Concorrentes Diretos:** Mapeia os principais rivais que disputam a mesma venda no Brasil com preços, fretes e diferenciais.
 * **Detecção de Brechas de Mercado:** Identifica se os concorrentes oferecem kits (estojo, flanela, brindes) e se utilizam entrega rápida (*Full*).
 * **Teto de Custo Fabril na China:** Calcula matematicamente quanto você pode pagar no lote na China (FOB) para manter 35%+ de margem líquida no Brasil.
 * **Exportação Executiva:** Gera relatório completo em Markdown (`dossie_mercado.md`) e planilha Excel (`benchmarking_concorrencia.xlsx`).
+
+### 5. 📈 Radar de Tendências China → Brasil *(Novo!)*
+* **Detecção Precoce de Produtos Virais:** Coleta diária de snapshots de produtos em ascensão no AliExpress e Alibaba por categorias estratégicas.
+* **Métricas de Velocidade e Aceleração:** Algoritmo que calcula velocidade de crescimento de vendas (7d/30d) e aceleração para detectar produtos antes da saturação.
+* **Análise de Gap de Mercado:** Cruzamento automatizado com concorrência no Mercado Livre para classificar oportunidades em *Oceano Azul* (alta demanda na China, baixa oferta no Brasil), *Tendência*, *Emergente* ou *Saturado*.
+* **Dashboard Interativo & Automação:** Interface analítica com sparklines de histórico de vendas, filtros avançados e agendamento diário via systemd timer.
 
 ---
 
@@ -128,6 +134,15 @@ python -m src.cli.main concorrencia --url "https://produto.mercadolivre.com.br/M
 python -m src.cli.main concorrencia --termo "relogio safira cronografo" --buscar-fabricas --exportar
 ```
 
+### Radar de Tendências:
+```bash
+# Coleta diária de snapshots de produtos na China:
+python -m src.cli.main trends --collect
+
+# Análise de velocidade de crescimento e gap no Mercado Livre:
+python -m src.cli.main trends --analyze --min-score 60 --exportar
+```
+
 ---
 
 ## 🧪 Testes Automatizados
@@ -137,7 +152,7 @@ O projeto conta com suíte de testes unitários e de integração abrangente cob
 ```bash
 pytest
 ```
-*Resultado: **93 passed** em ~1.7s.*
+*Resultado: **169 passed** em ~2.8s.*
 
 ---
 
