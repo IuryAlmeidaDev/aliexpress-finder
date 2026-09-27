@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import sqlite3
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Optional
 
 from .models import TrendTerm
@@ -11,9 +12,14 @@ from .terms import get_default_terms
 
 class TrendRepository:
     def __init__(self, db_path: str):
+        if db_path != ":memory:":
+            Path(db_path).parent.mkdir(parents=True, exist_ok=True)
         self._conn = sqlite3.connect(db_path, timeout=30)
         self._conn.execute("PRAGMA journal_mode=WAL;")
         self._conn.row_factory = sqlite3.Row
+
+    def close(self):
+        self._conn.close()
 
     def initialize(self):
         c = self._conn
@@ -48,6 +54,8 @@ class TrendRepository:
                 ON trend_snapshots(source, product_id, collected_at);
             CREATE INDEX IF NOT EXISTS idx_snapshots_term
                 ON trend_snapshots(term_id, collected_at);
+            CREATE INDEX IF NOT EXISTS idx_snapshots_collected_at
+                ON trend_snapshots(collected_at);
             CREATE TABLE IF NOT EXISTS trend_opportunities (
                 id                  INTEGER PRIMARY KEY AUTOINCREMENT,
                 snapshot_id         INTEGER NOT NULL REFERENCES trend_snapshots(id),
@@ -126,7 +134,7 @@ class TrendRepository:
             "SELECT DISTINCT s.product_id, s.source, t.category "
             "FROM trend_snapshots s JOIN trend_terms t ON s.term_id = t.id "
             "WHERE s.sales_total IS NOT NULL "
-            "GROUP BY s.product_id, s.source "
+            "GROUP BY s.product_id, s.source, t.category "
             "HAVING MIN(s.collected_at) <= ? AND COUNT(*) >= 2",
             (cutoff,)
         ).fetchall()
@@ -240,8 +248,8 @@ class TrendRepository:
         cutoff = (datetime.now(timezone.utc) - timedelta(days=inactive_days)).strftime("%Y-%m-%d")
         self._conn.execute(
             "UPDATE trend_terms SET active = 0 "
-            "WHERE active = 1 AND id NOT IN ("
+            "WHERE active = 1 AND created_at < ? AND id NOT IN ("
             "  SELECT DISTINCT term_id FROM trend_snapshots WHERE collected_at >= ?"
-            ")", (cutoff,)
+            ")", (cutoff, cutoff)
         )
         self._conn.commit()
