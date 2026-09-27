@@ -259,6 +259,49 @@ def create_app(
             return FileResponse(target, filename=f'arbitragem_{scan_id}.xlsx')
         raise HTTPException(404, 'Relatório de arbitragem não encontrado.')
 
+    # --- Trend Radar endpoints ---
+    import os as _os
+    from src.trends.repository import TrendRepository as _TrendRepo
+
+    def _get_trend_repo():
+        db_path = _os.getenv("MERCADO_LIVRE_DB_PATH", "data/mercado_livre_radar.db")
+        repo = _TrendRepo(db_path)
+        repo.initialize()
+        return repo
+
+    @app.get('/radar/api/trends', dependencies=[Depends(authorized)])
+    def get_trends(strategy: str = "", category: str = "", limit: int = 100):
+        repo = _get_trend_repo()
+        items = repo.get_trending(
+            strategy=strategy or None,
+            category=category or None,
+            limit=min(limit, 200),
+        )
+        # Enrich with sparkline
+        for item in items:
+            item["sparkline"] = repo.get_sparkline(
+                item["product_id"], item["source"], points=30
+            )
+        return {"items": items}
+
+    @app.get('/radar/api/trends/stats', dependencies=[Depends(authorized)])
+    def get_trend_stats():
+        repo = _get_trend_repo()
+        return repo.get_stats()
+
+    @app.get('/radar/api/trends/terms', dependencies=[Depends(authorized)])
+    def get_trend_terms():
+        repo = _get_trend_repo()
+        terms = repo.get_active_terms()
+        return {"terms": [{"id": t.id, "term": t.term, "category": t.category,
+                           "source": t.source} for t in terms]}
+
+    @app.get('/radar/api/trends/{product_id}/history', dependencies=[Depends(authorized)])
+    def get_trend_history(product_id: str, source: str = "aliexpress"):
+        repo = _get_trend_repo()
+        history = repo.get_product_history(product_id, source)
+        return {"history": history}
+
     dist = Path(os.getenv('RADAR_DIST_DIR', 'dashboard/dist'))
     if dist.exists():
         app.mount('/radar', StaticFiles(directory=dist, html=True), name='dashboard')
