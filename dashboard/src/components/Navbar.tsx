@@ -1,5 +1,5 @@
 import React from "react"
-import { Sparkles, Download, Upload, RefreshCw, LogOut, Calendar, Layers, Ship } from "lucide-react"
+import { Sparkles, Download, Upload, RefreshCw, LogOut, Calendar, Layers, Ship, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { RunReport } from "@/types"
@@ -12,8 +12,8 @@ interface NavbarProps {
   onRefresh: () => void
   onLogout: () => void
   refreshing: boolean
-  activeTab: "radar" | "arbitrage"
-  onTabChange: (tab: "radar" | "arbitrage") => void
+  activeTab: "radar" | "arbitrage" | "trends"
+  onTabChange: (tab: "radar" | "arbitrage" | "trends") => void
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -92,6 +92,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Ship className="w-3.5 h-3.5" />
               Arbitragem China × ML
+            </button>
+            <button
+              onClick={() => onTabChange("trends")}
+              className={`px-3 py-1 rounded-md font-medium transition-all flex items-center gap-1.5 ${
+                activeTab === "trends"
+                  ? "bg-[#176449] text-white shadow-xs font-semibold"
+                  : "text-[#5a6e65] hover:text-[#111916]"
+              }`}
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              Tendências
             </button>
           </div>
         </div>

@@ -94,3 +94,47 @@ export interface ArbitrageReport {
   saturated_count: number
   items: ArbitrageItem[]
 }
+
+export interface TrendOpportunity {
+  product_id: string
+  source: string
+  title: string
+  url: string
+  category: string
+  price_brl: number | null
+  sales_total: number | null
+  sales_velocity_7d: number
+  sales_velocity_30d: number
+  acceleration: number
+  ml_query: string
+  ml_competitors: number | null
+  ml_avg_price: number | null
+  ml_min_price: number | null
+  ml_full_share_pct: number | null
+  ml_total_sales_br: number | null
+  landed_cost_brl: number | null
+  suggested_price_brl: number | null
+  net_margin_pct: number | null
+  strategy: string
+  trend_score: number
+  supplier_name?: string
+  moq?: number
+  is_verified?: boolean
+  sparkline: number[]
+  calculated_at: string
+}
+
+export interface TrendStats {
+  total_monitored: number
+  ocean_blue_count: number
+  trending_count: number
+  emerging_count: number
+  top_acceleration: { title: string; velocity_7d: number }
+  by_category: { category: string; count: number }[]
+}
+
+export interface TrendHistoryPoint {
+  collected_at: string
+  sales_total: number | null
+  price_brl: number | null
+}

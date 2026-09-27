@@ -9,17 +9,20 @@ import { ProductDrawer } from "@/components/ProductDrawer"
 import { UploadModal } from "@/components/UploadModal"
 import { AuthGate } from "@/components/AuthGate"
 import { ArbitrageView } from "@/components/ArbitrageView"
+import { TrendsView } from "@/components/TrendsView"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { RunReport, Product, DashboardDataResponse, ArbitrageReport } from "@/types"
+import { RunReport, Product, DashboardDataResponse, ArbitrageReport, TrendOpportunity, TrendStats, TrendHistoryPoint } from "@/types"
 import { AlertCircle, RefreshCw, BarChart2, ScatterChart, Layers } from "lucide-react"
 
 export const App: React.FC = () => {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null)
-  const [activeTab, setActiveTab] = useState<"radar" | "arbitrage">("radar")
+  const [activeTab, setActiveTab] = useState<"radar" | "arbitrage" | "trends">("radar")
   const [runs, setRuns] = useState<RunReport[]>([])
   const [arbitrageScans, setArbitrageScans] = useState<ArbitrageReport[]>([])
+  const [trendItems, setTrendItems] = useState<TrendOpportunity[]>([])
+  const [trendStats, setTrendStats] = useState<TrendStats | null>(null)
   const [selectedRunId, setSelectedRunId] = useState<string>("")
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string>("")
@@ -54,9 +57,10 @@ export const App: React.FC = () => {
     setError(null)
 
     try {
-      const [radarRes, arbRes] = await Promise.all([
+      const [radarRes, arbRes, trendRes] = await Promise.all([
         fetch("/radar/api/data"),
         fetch("/radar/api/arbitrage"),
+        fetch("/radar/api/trends"),
       ])
 
       if (radarRes.status === 401) {
@@ -73,6 +77,11 @@ export const App: React.FC = () => {
       if (arbRes.ok) {
         const arbData = await arbRes.json()
         setArbitrageScans(arbData.scans || [])
+      }
+
+      if (trendRes.ok) {
+        const trendData = await trendRes.json()
+        setTrendItems(trendData.items || [])
       }
 
       // Default select the latest run
@@ -119,6 +128,8 @@ export const App: React.FC = () => {
       setAuthenticated(false)
       setRuns([])
       setArbitrageScans([])
+      setTrendItems([])
+      setTrendStats(null)
     }
   }
 
@@ -254,6 +265,11 @@ export const App: React.FC = () => {
         {/* TAB 2: ARBITRAGEM CHINA × MERCADO LIVRE */}
         {!loading && activeTab === "arbitrage" && (
           <ArbitrageView initialScans={arbitrageScans} />
+        )}
+
+        {/* TAB 3: TENDÊNCIAS / TREND RADAR */}
+        {!loading && activeTab === "trends" && (
+          <TrendsView items={trendItems} />
         )}
       </main>
 
