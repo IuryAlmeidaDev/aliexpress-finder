@@ -86,7 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => onTabChange("arbitrage")}
               className={`px-3 py-1 rounded-md font-medium transition-all flex items-center gap-1.5 ${
                 activeTab === "arbitrage"
-                  ? "bg-[#176449] text-white shadow-xs font-semibold"
+                  ? "bg-white text-[#176449] shadow-xs font-semibold"
                   : "text-[#5a6e65] hover:text-[#111916]"
               }`}
             >
@@ -97,7 +97,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => onTabChange("trends")}
               className={`px-3 py-1 rounded-md font-medium transition-all flex items-center gap-1.5 ${
                 activeTab === "trends"
-                  ? "bg-[#176449] text-white shadow-xs font-semibold"
+                  ? "bg-white text-[#176449] shadow-xs font-semibold"
                   : "text-[#5a6e65] hover:text-[#111916]"
               }`}
             >
@@ -175,7 +175,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             variant="ghost"
             size="icon-sm"
             onClick={onLogout}
-            className="text-gray-400 hover:text-red-600 hover:bg-red-50"
+            className="text-[#5a6e65] hover:text-red-700 hover:bg-red-50"
             title="Encerrar sessão"
           >
             <LogOut className="w-4 h-4" />

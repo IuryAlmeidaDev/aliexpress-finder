@@ -124,7 +124,7 @@ export const KpiRail: React.FC<KpiRailProps> = ({ products, runCount }) => {
         <CardContent className="p-4">
           <div className="flex items-center justify-between text-xs text-[#5a6e65] mb-1">
             <span>Score Combinado</span>
-            <Award className="w-4 h-4 text-purple-600" />
+            <Award className="w-4 h-4 text-[#176449]" />
           </div>
           <div className="text-2xl font-bold text-[#111916]">
             {avgCombined}

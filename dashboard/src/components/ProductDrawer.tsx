@@ -176,8 +176,8 @@ export const ProductDrawer: React.FC<ProductDrawerProps> = ({
 
             <div className="bg-[#f8faf9] p-3 rounded-lg border border-[#e2ede7] text-center">
               <div className="text-[11px] text-[#5a6e65] mb-0.5">Score Combinado</div>
-              <div className="text-xl font-bold text-purple-700">{product.combined ?? 0}</div>
-              <div className="text-[10px] text-purple-600 mt-0.5 font-medium">Prioridade</div>
+              <div className="text-xl font-bold text-[#14523d]">{product.combined ?? 0}</div>
+              <div className="text-[10px] text-[#176449] mt-0.5 font-medium">Prioridade</div>
             </div>
           </div>
 

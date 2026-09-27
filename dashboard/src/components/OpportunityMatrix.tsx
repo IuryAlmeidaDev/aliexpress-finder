@@ -151,8 +151,8 @@ export const OpportunityMatrix: React.FC<OpportunityMatrixProps> = ({
               onClick={() => setSelectedQuadrant("niche")}
               className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                 selectedQuadrant === "niche"
-                  ? "bg-purple-700 text-white"
-                  : "bg-purple-50 text-purple-800 hover:bg-purple-100 border border-purple-200"
+                  ? "bg-teal-700 text-white"
+                  : "bg-teal-50 text-teal-800 hover:bg-teal-100 border border-teal-200"
               }`}
             >
               Nicho Marca
@@ -165,7 +165,7 @@ export const OpportunityMatrix: React.FC<OpportunityMatrixProps> = ({
         {/* Visual guide header */}
         <div className="grid grid-cols-2 text-[11px] mb-2 px-6 py-1.5 bg-[#f8faf9] rounded-lg border border-[#e2ede7] text-[#5a6e65]">
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-purple-500" />
+            <span className="w-2 h-2 rounded-full bg-teal-600" />
             <span>Nicho de Diferenciação (Alta Marca / Baixo Volume)</span>
           </div>
           <div className="flex items-center justify-end gap-1.5 font-medium text-[#176449]">
@@ -237,7 +237,7 @@ export const OpportunityMatrix: React.FC<OpportunityMatrixProps> = ({
                   } else if (entry.x >= 50) {
                     fillColor = "#2563eb" // High demand, low brand: Blue
                   } else if (entry.y >= 50) {
-                    fillColor = "#9333ea" // Low demand, high brand: Purple
+                    fillColor = "#0d9488" // Low demand, high brand: Teal
                   }
 
                   return (
@@ -248,7 +248,8 @@ export const OpportunityMatrix: React.FC<OpportunityMatrixProps> = ({
                       stroke={entry.priority ? "#059669" : "#ffffff"}
                       strokeWidth={entry.priority ? 2 : 1}
                       r={entry.priority ? 7 : Math.max(4, Math.min(8, (entry.z / 100) * 8))}
-                      className="transition-transform hover:scale-125"
+                      className="transition-transform hover:scale-125 cursor-pointer"
+                      onClick={() => onSelectProduct(entry)}
                     />
                   )
                 })}
@@ -267,7 +268,7 @@ export const OpportunityMatrix: React.FC<OpportunityMatrixProps> = ({
               <span className="w-2.5 h-2.5 rounded-full bg-blue-600" /> Volume / Commodities
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-purple-600" /> Nicho Diferenciável
+              <span className="w-2.5 h-2.5 rounded-full bg-teal-600" /> Nicho Diferenciável
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-slate-500" /> Investigação

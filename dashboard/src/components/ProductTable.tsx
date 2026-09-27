@@ -36,6 +36,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
   const [statusFilter, setStatusFilter] = useState<"all" | "priority" | "investigating">("all")
   const [minDemand, setMinDemand] = useState<number>(0)
   const [minBrand, setMinBrand] = useState<number>(0)
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState<boolean>(false)
   const [sortField, setSortField] = useState<SortField>("rank")
   const [sortAsc, setSortAsc] = useState(true)
   const [page, setPage] = useState(1)
@@ -217,6 +218,23 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                 ))}
               </select>
             )}
+            {/* Advanced score filters toggle */}
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className={`h-8 text-xs border-[#cbd8d1] flex items-center gap-1.5 ${
+                showAdvancedFilters || minDemand > 0 || minBrand > 0
+                  ? "bg-[#e8f1ec] text-[#14523d] border-[#176449]"
+                  : "text-[#5a6e65]"
+              }`}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>Filtros de Score</span>
+              {(minDemand > 0 || minBrand > 0) && (
+                <span className="w-2 h-2 rounded-full bg-[#176449]" />
+              )}
+            </Button>
           </div>
 
           {/* Quick Clear filters */}
@@ -238,6 +256,48 @@ export const ProductTable: React.FC<ProductTableProps> = ({
             </Button>
           )}
         </div>
+
+        {/* Advanced Score Filters Panel */}
+        {showAdvancedFilters && (
+          <div className="mt-3 p-3 bg-[#f8faf9] rounded-lg border border-[#dbe4df] grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <div className="flex justify-between items-center mb-1 text-[#5a6e65]">
+                <span className="font-medium text-[#111916]">Demanda Mínima:</span>
+                <span className="font-bold text-blue-700">{minDemand} / 100</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={minDemand}
+                onChange={(e) => {
+                  setMinDemand(Number(e.target.value))
+                  setPage(1)
+                }}
+                className="w-full accent-blue-600 cursor-pointer"
+              />
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-1 text-[#5a6e65]">
+                <span className="font-medium text-[#111916]">Potencial de Marca Mínimo:</span>
+                <span className="font-bold text-[#176449]">{minBrand} / 100</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={minBrand}
+                onChange={(e) => {
+                  setMinBrand(Number(e.target.value))
+                  setPage(1)
+                }}
+                className="w-full accent-[#176449] cursor-pointer"
+              />
+            </div>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="p-0">
@@ -384,7 +444,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
 
                       {/* Combined Score */}
                       <td className="py-3 px-4 text-center">
-                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full font-bold text-xs bg-purple-50 text-purple-800 border border-purple-200">
+                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full font-bold text-xs bg-[#e8f1ec] text-[#14523d] border border-[#cbd8d1] font-mono">
                           {p.combined ?? 0}
                         </span>
                       </td>

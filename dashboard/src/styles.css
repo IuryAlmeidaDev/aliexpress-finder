@@ -29,4 +29,39 @@ body {
   color: var(--color-foreground);
   min-height: 100vh;
   margin: 0;
+  caret-color: #176449;
 }
+
+::selection {
+  background-color: #176449;
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid #176449;
+  outline-offset: 2px;
+}
+
+table, .tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f0f4f2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd8d1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a3b8ad;
+}
+
