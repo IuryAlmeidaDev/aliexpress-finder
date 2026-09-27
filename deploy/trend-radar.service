@@ -1,0 +1,14 @@
+[Unit]
+Description=Radar de Tendências China → Brasil (coleta diária)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/opt/aliexpress-finder
+EnvironmentFile=/opt/aliexpress-finder/.env
+ExecStart=/usr/bin/flock -n /opt/aliexpress-finder/data/trends.lock /opt/aliexpress-finder/.venv/bin/python -m src.cli.main trends --collect
+
+[Install]
+WantedBy=multi-user.target
