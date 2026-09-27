@@ -152,7 +152,70 @@ def handle_arbitragem(args):
         export_arbitrage_excel(report, output_path=out_file)
         console.print(f"\n[bold green]📊 Planilha de Arbitragem exportada com sucesso:[/bold green] [cyan]{out_file}[/cyan]")
 
+def handle_trends(args):
+    from src.trends.repository import TrendRepository
+    from src.config import load_config
+    import os
+
+    cfg = load_config()
+    db_path = os.getenv("MERCADO_LIVRE_DB_PATH", "data/mercado_livre_radar.db")
+    repo = TrendRepository(db_path)
+    repo.initialize()
+    repo.seed_default_terms()
+
+    if getattr(args, "collect", False):
+        from src.trends.collector import collect_trends
+        from src.trends.velocity import calculate_velocity
+        from src.trends.gap_analyzer import analyze_gaps
+
+        print("🔍 Estágio 1: Coletando dados da China...")
+        result = collect_trends(repo)
+        print(f"   → {result['collected']} snapshots coletados, "
+              f"{result['skipped_terms']} termos pulados")
+
+        print("📊 Estágio 2: Calculando velocidades...")
+        velocities = calculate_velocity(repo)
+        print(f"   → {len(velocities)} produtos com aceleração detectada")
+
+        if velocities:
+            print("🇧🇷 Estágio 3: Cruzando com Mercado Livre...")
+            opportunities = analyze_gaps(velocities, repo)
+            oceanos = sum(1 for o in opportunities if o.strategy == "OCEANO_AZUL")
+            print(f"   → {len(opportunities)} oportunidades, {oceanos} Oceanos Azuis")
+        print("✅ Coleta completa!")
+
+    elif getattr(args, "analyze", False):
+        from src.trends.velocity import calculate_velocity
+        from src.trends.gap_analyzer import analyze_gaps
+
+        print("📊 Recalculando velocidades...")
+        velocities = calculate_velocity(repo)
+        print(f"   → {len(velocities)} produtos com aceleração")
+        if velocities:
+            print("🇧🇷 Cruzando com Mercado Livre...")
+            opportunities = analyze_gaps(velocities, repo)
+            print(f"   → {len(opportunities)} oportunidades")
+        print("✅ Análise completa!")
+
+    elif getattr(args, "cleanup", False):
+        repo.cleanup_old(days=90)
+        repo.deactivate_stale_terms(inactive_days=30)
+        print("🧹 Limpeza concluída (dados > 90 dias removidos)")
+
 def run():
+    if len(sys.argv) > 1 and sys.argv[1] == "trends":
+        trends_parser = argparse.ArgumentParser(description="Radar de Tendências China → Brasil")
+        trends_group = trends_parser.add_mutually_exclusive_group(required=True)
+        trends_group.add_argument("--collect", action="store_true",
+                                  help="Executar coleta completa (3 estágios)")
+        trends_group.add_argument("--analyze", action="store_true",
+                                  help="Recalcular velocidades e oportunidades")
+        trends_group.add_argument("--cleanup", action="store_true",
+                                  help="Remover dados com mais de 90 dias")
+        trends_args = trends_parser.parse_args(sys.argv[2:])
+        handle_trends(trends_args)
+        return
+
     if len(sys.argv) > 1 and sys.argv[1] == "arbitragem":
         arb_parser = argparse.ArgumentParser(description="Radar de Arbitragem: China Wholesale x Mercado Livre")
         arb_parser.add_argument("--termo", type=str, default="", help="Termo principal de busca ou nicho")
