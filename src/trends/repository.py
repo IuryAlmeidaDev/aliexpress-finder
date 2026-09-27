@@ -116,6 +116,23 @@ class TrendRepository:
             )
         self._conn.commit()
 
+    def get_latest_snapshot(self, product_id: str, source: str) -> dict | None:
+        row = self._conn.execute(
+            "SELECT title, url, price_brl, sales_total, rating, moq, "
+            "supplier_name, is_verified FROM trend_snapshots "
+            "WHERE product_id = ? AND source = ? ORDER BY collected_at DESC LIMIT 1",
+            (product_id, source)
+        ).fetchone()
+        return dict(row) if row else None
+
+    def get_latest_snapshot_id(self, product_id: str, source: str) -> int | None:
+        row = self._conn.execute(
+            "SELECT id FROM trend_snapshots WHERE product_id = ? AND source = ? "
+            "ORDER BY collected_at DESC LIMIT 1",
+            (product_id, source)
+        ).fetchone()
+        return row["id"] if row else None
+
     def get_snapshots_for_velocity(self, product_id: str, source: str,
                                    days: int) -> list[tuple[str, int]]:
         cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")

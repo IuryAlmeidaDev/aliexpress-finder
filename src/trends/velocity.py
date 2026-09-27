@@ -43,20 +43,16 @@ def calculate_velocity(repo: TrendRepository) -> list[TrendVelocity]:
         if len(snapshots_14d) >= 3:
             # Find snapshot closest to 14 days ago and 7 days ago
             s14 = snapshots_14d[0][1]  # oldest in 14d window
-            s7_list = repo.get_snapshots_for_velocity(product_id, source, days=7)
-            if s7_list:
-                s7 = s7_list[0][1]
+            if snapshots_7d:
+                s7 = snapshots_7d[0][1]
                 prev_velocity = s7 - s14
                 if prev_velocity > 0:
                     acceleration = ((velocity_7d - prev_velocity) / prev_velocity) * 100.0
 
         # Get latest snapshot details for title, url, price, etc.
-        latest_row = repo._conn.execute(
-            "SELECT title, url, price_brl, sales_total, rating, moq, "
-            "supplier_name, is_verified FROM trend_snapshots "
-            "WHERE product_id = ? AND source = ? ORDER BY collected_at DESC LIMIT 1",
-            (product_id, source)
-        ).fetchone()
+        latest_row = repo.get_latest_snapshot(product_id, source)
+        if not latest_row:
+            continue
 
         results.append(TrendVelocity(
             product_id=product_id,

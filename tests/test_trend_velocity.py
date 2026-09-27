@@ -57,6 +57,17 @@ def test_acceleration_calculation():
     assert round(results[0].acceleration, 1) == 166.7
 
 
+def test_deceleration_calculation():
+    # Week before last: velocity was 800 (1000→1800 in 7d)
+    # Last week: velocity is 300 (1800→2100 in 7d)
+    # Acceleration = (300 - 800) / 800 * 100 = -62.5%
+    repo = _make_repo_with_data([(14, 1000), (7, 1800), (0, 2100)])
+    results = calculate_velocity(repo)
+    assert len(results) == 1
+    assert results[0].sales_velocity_7d == 300
+    assert round(results[0].acceleration, 1) == -62.5
+
+
 def test_filters_below_threshold():
     # velocity_7d = 50, below MIN_TREND_VELOCITY of 100
     repo = _make_repo_with_data([(7, 1000), (0, 1050)])

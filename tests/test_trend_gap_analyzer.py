@@ -82,11 +82,16 @@ def test_analyze_gaps_ml_failure_marks_pendente(mock_radar_cls, mock_rate):
     mock_radar_cls.return_value = mock_radar
 
     repo = _make_repo()
-    velocities = [_make_velocity()]
+    velocities = [_make_velocity(price_brl=50.0)]
     results = analyze_gaps(velocities, repo)
     assert len(results) == 1
     assert results[0].strategy == STRATEGY_PENDENTE
     assert results[0].ml_competitors is None
+    assert results[0].landed_cost_brl is not None
+    assert results[0].landed_cost_brl == 110.84
+    assert results[0].suggested_price_brl is not None
+    assert results[0].suggested_price_brl == 184.73
+    assert results[0].net_margin_pct == 24.0
 
 
 @patch("src.trends.gap_analyzer.get_usd_brl_rate")

@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 from src.competitors.radar import CompetitorRadar
 from src.finance.currency import get_usd_brl_rate
 from src.config import load_config
-from src.arbitrage.engine import ArbitrageEngine
 from .models import TrendVelocity, TrendOpportunity, STRATEGY_PENDENTE
 from .repository import TrendRepository
 from .scoring import calculate_trend_score
@@ -137,28 +136,28 @@ def analyze_gaps(
                 ml_full_share_pct = 0.0
                 ml_total_sales_br = 0
 
-            # Calculate landed cost
-            if v.price_brl and v.price_brl > 0:
-                fob = v.price_brl
-                freight = fob * 0.15
-                customs_base = fob + freight
-                import_tax = customs_base * 0.60
-                icms_base = (customs_base + import_tax) / (1.0 - cfg.DEFAULT_ICMS_RATE)
-                icms = icms_base * cfg.DEFAULT_ICMS_RATE
-                landed_cost = round(customs_base + import_tax + icms, 2)
-
-                # Suggested price
-                if ml_avg_price and ml_avg_price > 0:
-                    suggested_price = ml_avg_price
-                else:
-                    suggested_price = round(landed_cost / (1.0 - cfg.DEFAULT_TARGET_MARGIN), 2)
-
-                ml_fee = suggested_price * cfg.DEFAULT_MARKETPLACE_FEE
-                net_profit = suggested_price - ml_fee - landed_cost
-                net_margin = round((net_profit / suggested_price) * 100, 1) if suggested_price > 0 else 0.0
-
         except Exception as e:
             logger.warning(f"Gap analysis failed for '{v.title}': {e}")
+
+        # Calculate landed cost
+        if v.price_brl and v.price_brl > 0:
+            fob = v.price_brl
+            freight = fob * 0.15
+            customs_base = fob + freight
+            import_tax = customs_base * 0.60
+            icms_base = (customs_base + import_tax) / (1.0 - cfg.DEFAULT_ICMS_RATE)
+            icms = icms_base * cfg.DEFAULT_ICMS_RATE
+            landed_cost = round(customs_base + import_tax + icms, 2)
+
+            # Suggested price
+            if ml_avg_price and ml_avg_price > 0:
+                suggested_price = ml_avg_price
+            else:
+                suggested_price = round(landed_cost / (1.0 - cfg.DEFAULT_TARGET_MARGIN), 2)
+
+            ml_fee = suggested_price * cfg.DEFAULT_MARKETPLACE_FEE
+            net_profit = suggested_price - ml_fee - landed_cost
+            net_margin = round((net_profit / suggested_price) * 100, 1) if suggested_price > 0 else 0.0
 
         # Score and classify
         max_vel = max_vel_by_cat.get(v.category, v.sales_velocity_7d)
@@ -170,12 +169,7 @@ def analyze_gaps(
         sparkline = repo.get_sparkline(v.product_id, v.source, points=30)
 
         # Get snapshot_id for the latest snapshot
-        row = repo._conn.execute(
-            "SELECT id FROM trend_snapshots WHERE product_id = ? AND source = ? "
-            "ORDER BY collected_at DESC LIMIT 1",
-            (v.product_id, v.source)
-        ).fetchone()
-        snapshot_id = row["id"] if row else 0
+        snapshot_id = repo.get_latest_snapshot_id(v.product_id, v.source) or 0
 
         opp = TrendOpportunity(
             product_id=v.product_id, source=v.source, title=v.title,

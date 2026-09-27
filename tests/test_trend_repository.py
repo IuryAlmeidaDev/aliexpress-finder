@@ -323,3 +323,76 @@ def test_repo_init_creates_dir_and_close(tmp_path):
     repo.initialize()
     assert db_file.exists()
     repo.close()
+
+
+def test_get_latest_snapshot():
+    repo = _make_repo()
+    repo.seed_default_terms()
+    terms = repo.get_active_terms()
+    term = terms[0]
+
+    snap_old = {
+        "term_id": term.id, "source": "aliexpress", "product_id": "p_latest",
+        "title": "Old Title", "price_brl": 30.0, "price_usd": 6.0,
+        "sales_total": 100, "rating": 4.0, "moq": 1,
+        "supplier_name": "Supplier A", "is_verified": 0,
+        "url": "https://example.com/p_old", "collected_at": "2026-09-20"
+    }
+    snap_new = {
+        "term_id": term.id, "source": "aliexpress", "product_id": "p_latest",
+        "title": "New Title", "price_brl": 45.0, "price_usd": 9.0,
+        "sales_total": 250, "rating": 4.8, "moq": 2,
+        "supplier_name": "Supplier B", "is_verified": 1,
+        "url": "https://example.com/p_new", "collected_at": "2026-09-25"
+    }
+    repo.save_snapshots([snap_old, snap_new])
+
+    latest = repo.get_latest_snapshot("p_latest", "aliexpress")
+    assert latest is not None
+    assert latest["title"] == "New Title"
+    assert latest["price_brl"] == 45.0
+    assert latest["sales_total"] == 250
+    assert latest["rating"] == 4.8
+    assert latest["moq"] == 2
+    assert latest["supplier_name"] == "Supplier B"
+    assert latest["is_verified"] == 1
+    assert latest["url"] == "https://example.com/p_new"
+
+    assert repo.get_latest_snapshot("nonexistent", "aliexpress") is None
+    repo.close()
+
+
+def test_get_latest_snapshot_id():
+    repo = _make_repo()
+    repo.seed_default_terms()
+    terms = repo.get_active_terms()
+    term = terms[0]
+
+    snap_old = {
+        "term_id": term.id, "source": "aliexpress", "product_id": "p_id",
+        "title": "Item v1", "price_brl": 10.0, "price_usd": 2.0,
+        "sales_total": 50, "rating": 4.0, "moq": None,
+        "supplier_name": None, "is_verified": None,
+        "url": "https://example.com/p1", "collected_at": "2026-09-20"
+    }
+    snap_new = {
+        "term_id": term.id, "source": "aliexpress", "product_id": "p_id",
+        "title": "Item v2", "price_brl": 12.0, "price_usd": 2.4,
+        "sales_total": 80, "rating": 4.2, "moq": None,
+        "supplier_name": None, "is_verified": None,
+        "url": "https://example.com/p2", "collected_at": "2026-09-25"
+    }
+    repo.save_snapshots([snap_old, snap_new])
+
+    latest_id = repo.get_latest_snapshot_id("p_id", "aliexpress")
+    assert latest_id is not None
+
+    expected_id = repo._conn.execute(
+        "SELECT id FROM trend_snapshots WHERE product_id = 'p_id' AND source = 'aliexpress' "
+        "ORDER BY collected_at DESC LIMIT 1"
+    ).fetchone()["id"]
+    assert latest_id == expected_id
+
+    assert repo.get_latest_snapshot_id("nonexistent", "aliexpress") is None
+    repo.close()
+
