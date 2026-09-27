@@ -42,7 +42,7 @@ def client(tmp_path):
         "net_margin_pct": 54.0, "strategy": "OCEANO_AZUL",
         "trend_score": 92.0, "calculated_at": datetime.now(timezone.utc).isoformat()
     }])
-    repo._conn.close()
+    repo.close()
 
     with patch.dict("os.environ", {"MERCADO_LIVRE_DB_PATH": db_path}):
         app = create_app(
@@ -69,6 +69,12 @@ def test_get_trends_filter_strategy(client):
     resp = client.get("/radar/api/trends?strategy=SATURADO")
     assert resp.status_code == 200
     assert len(resp.json()["items"]) == 0
+
+
+def test_get_trends_limit_clamped(client):
+    resp = client.get("/radar/api/trends?limit=0")
+    assert resp.status_code == 200
+    assert len(resp.json()["items"]) == 1
 
 
 def test_get_trends_stats(client):
@@ -100,5 +106,8 @@ def test_trends_requires_auth():
     from src.mercado_livre.dashboard_api import create_app
     app = create_app(access_key="test-key-minimum-24-characters-long")
     tc = TestClient(app)
-    resp = tc.get("/radar/api/trends")
-    assert resp.status_code == 401
+    assert tc.get("/radar/api/trends").status_code == 401
+    assert tc.get("/radar/api/trends/stats").status_code == 401
+    assert tc.get("/radar/api/trends/terms").status_code == 401
+    assert tc.get("/radar/api/trends/test1/history").status_code == 401
+

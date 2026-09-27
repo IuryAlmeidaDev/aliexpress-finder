@@ -22,6 +22,7 @@ from src.arbitrage.engine import ArbitrageEngine
 from src.arbitrage.exporter import export_arbitrage_excel
 from src.finance.currency import get_usd_brl_rate
 from src.config import load_config
+from src.trends.repository import TrendRepository
 
 
 def create_app(
@@ -33,6 +34,10 @@ def create_app(
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     directory = Path(report_dir or os.getenv('RADAR_REPORT_DIR', 'reports'))
     directory.mkdir(parents=True, exist_ok=True)
+
+    trend_init_repo = TrendRepository(os.getenv("MERCADO_LIVRE_DB_PATH", "data/mercado_livre_radar.db"))
+    trend_init_repo.initialize()
+    trend_init_repo.close()
     
     if auth_disabled is None:
         env_auth_disabled = os.getenv('RADAR_AUTH_DISABLED', '').lower() in ('true', '1', 'yes')
@@ -260,22 +265,26 @@ def create_app(
         raise HTTPException(404, 'Relatório de arbitragem não encontrado.')
 
     # --- Trend Radar endpoints ---
-    import os as _os
-    from src.trends.repository import TrendRepository as _TrendRepo
-
-    def _get_trend_repo():
-        db_path = _os.getenv("MERCADO_LIVRE_DB_PATH", "data/mercado_livre_radar.db")
-        repo = _TrendRepo(db_path)
-        repo.initialize()
-        return repo
+    def get_trend_repo():
+        db_path = os.getenv("MERCADO_LIVRE_DB_PATH", "data/mercado_livre_radar.db")
+        repo = TrendRepository(db_path)
+        try:
+            yield repo
+        finally:
+            repo.close()
 
     @app.get('/radar/api/trends', dependencies=[Depends(authorized)])
-    def get_trends(strategy: str = "", category: str = "", limit: int = 100):
-        repo = _get_trend_repo()
+    def get_trends(
+        strategy: str = "",
+        category: str = "",
+        limit: int = 100,
+        repo: TrendRepository = Depends(get_trend_repo),
+    ):
+        limit = max(1, min(limit, 200))
         items = repo.get_trending(
             strategy=strategy or None,
             category=category or None,
-            limit=min(limit, 200),
+            limit=limit,
         )
         # Enrich with sparkline
         for item in items:
@@ -285,20 +294,21 @@ def create_app(
         return {"items": items}
 
     @app.get('/radar/api/trends/stats', dependencies=[Depends(authorized)])
-    def get_trend_stats():
-        repo = _get_trend_repo()
+    def get_trend_stats(repo: TrendRepository = Depends(get_trend_repo)):
         return repo.get_stats()
 
     @app.get('/radar/api/trends/terms', dependencies=[Depends(authorized)])
-    def get_trend_terms():
-        repo = _get_trend_repo()
+    def get_trend_terms(repo: TrendRepository = Depends(get_trend_repo)):
         terms = repo.get_active_terms()
         return {"terms": [{"id": t.id, "term": t.term, "category": t.category,
                            "source": t.source} for t in terms]}
 
     @app.get('/radar/api/trends/{product_id}/history', dependencies=[Depends(authorized)])
-    def get_trend_history(product_id: str, source: str = "aliexpress"):
-        repo = _get_trend_repo()
+    def get_trend_history(
+        product_id: str,
+        source: str = "aliexpress",
+        repo: TrendRepository = Depends(get_trend_repo),
+    ):
         history = repo.get_product_history(product_id, source)
         return {"history": history}
 
