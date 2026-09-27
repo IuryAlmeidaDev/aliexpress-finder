@@ -34,7 +34,7 @@ const config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.js',
-          editUrl: 'https://github.com/IuryAlmeidaDev/aliexpress-finder/tree/master/docs/',
+          editUrl: 'https://github.com/IuryAlmeidaDev/aliexpress-finder/tree/main/docs/',
           exclude: ['superpowers/**'],
         },
         blog: false,
