@@ -42,7 +42,7 @@ def collect_trends(
     usd_rate = rate_info.rate
 
     ali_client = DirectAliExpressClient()
-    baba_client = DirectAlibabaClient()
+    baba_client = DirectAlibabaClient(usd_rate=usd_rate)
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     total_collected = 0
@@ -62,16 +62,17 @@ def collect_trends(
                 try:
                     if delay[1] > 0:
                         time.sleep(random.uniform(delay[0], delay[1]))
-                    items = ali_client.search(term.term, limit=ITEMS_PER_TERM)
+                    items = ali_client.search(term.term, max_items=ITEMS_PER_TERM)
                     for item in items:
+                        price = item.get("price")
                         snapshots.append({
                             "term_id": term.id,
                             "source": "aliexpress",
                             "product_id": str(item.get("id", "")),
                             "title": item.get("title", ""),
-                            "price_brl": item.get("price"),
-                            "price_usd": (item["price"] / usd_rate
-                                          if item.get("price") else None),
+                            "price_brl": price,
+                            "price_usd": (round(price / usd_rate, 2)
+                                          if price else None),
                             "sales_total": item.get("sales"),
                             "rating": item.get("rating"),
                             "moq": None,
@@ -89,7 +90,7 @@ def collect_trends(
                 try:
                     if delay[1] > 0:
                         time.sleep(random.uniform(delay[0], delay[1]))
-                    items = baba_client.search(term.term, limit=ITEMS_PER_TERM)
+                    items = baba_client.search(term.term, max_items=ITEMS_PER_TERM)
                     for item in items:
                         price_brl = item.get("price", 0)
                         snapshots.append({
@@ -98,7 +99,7 @@ def collect_trends(
                             "product_id": str(item.get("id", "")),
                             "title": item.get("title", ""),
                             "price_brl": price_brl,
-                            "price_usd": (price_brl / usd_rate
+                            "price_usd": (round(price_brl / usd_rate, 2)
                                           if price_brl else None),
                             "sales_total": item.get("sales"),
                             "rating": item.get("rating"),
