@@ -37,13 +37,15 @@ export const Navbar: React.FC<NavbarProps> = ({
     if (!isoString) return ""
     try {
       const d = new Date(isoString)
-      return d.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
+      return d
+        .toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+        .replace(",", "")
     } catch {
       return isoString
     }
@@ -121,10 +123,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <select
                     value={selectedRunId}
                     onChange={(e) => onSelectRun(e.target.value)}
-                    className="bg-transparent text-xs font-medium text-[#111916] dark:text-zinc-200 focus:outline-none pr-1 py-0.5 cursor-pointer max-w-[190px] sm:max-w-xs truncate"
+                    style={{ colorScheme: theme }}
+                    className="bg-transparent text-xs font-medium text-[#111916] dark:text-zinc-200 focus:outline-none pr-1 py-0.5 cursor-pointer max-w-[190px] sm:max-w-xs truncate [color-scheme:light] dark:[color-scheme:dark]"
                   >
                     {runs.map((r, i) => (
-                      <option key={r.id} value={r.id} className="dark:bg-[#13201a] dark:text-zinc-200">
+                      <option key={r.id} value={r.id} className="bg-white dark:bg-[#13201a] text-[#111916] dark:text-zinc-200">
                         Coleta #{i + 1} ({formatDate(r.date)}) - {r.products.length} itens
                       </option>
                     ))}

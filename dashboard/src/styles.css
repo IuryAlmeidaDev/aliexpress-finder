@@ -33,6 +33,25 @@ html.dark {
   color-scheme: dark;
 }
 
+select,
+option,
+input,
+textarea {
+  color-scheme: inherit;
+}
+
+html.dark select,
+html.dark option,
+html.dark input,
+html.dark textarea {
+  color-scheme: dark !important;
+}
+
+html.dark option {
+  background-color: #13201a;
+  color: #ecf4f0;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--color-background);
@@ -57,15 +76,6 @@ body {
 .dark ::selection {
   background-color: #059669;
   color: #ffffff;
-}
-
-:focus-visible {
-  outline: 2px solid #176449;
-  outline-offset: 2px;
-}
-
-.dark :focus-visible {
-  outline: 2px solid #10b981;
 }
 
 table, .tabular-nums {
