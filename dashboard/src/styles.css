@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Manrope Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --color-background: #f8faf9;
@@ -23,6 +25,14 @@
   --color-ring: #176449;
 }
 
+:root {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--color-background);
@@ -30,6 +40,13 @@ body {
   min-height: 100vh;
   margin: 0;
   caret-color: #176449;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.dark body {
+  background-color: #0b120f;
+  color: #ecf4f0;
+  caret-color: #34d399;
 }
 
 ::selection {
@@ -37,9 +54,18 @@ body {
   color: #ffffff;
 }
 
+.dark ::selection {
+  background-color: #059669;
+  color: #ffffff;
+}
+
 :focus-visible {
   outline: 2px solid #176449;
   outline-offset: 2px;
+}
+
+.dark :focus-visible {
+  outline: 2px solid #10b981;
 }
 
 table, .tabular-nums {
@@ -56,12 +82,23 @@ table, .tabular-nums {
   background: #f0f4f2;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #121c17;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #cbd8d1;
   border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #253a30;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a3b8ad;
 }
 
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #355043;
+}

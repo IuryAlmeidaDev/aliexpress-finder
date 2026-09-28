@@ -21,6 +21,7 @@ import {
   Tag,
   ShoppingBag,
 } from "lucide-react"
+import { formatCategoryName } from "@/lib/categories"
 
 interface ProductDrawerProps {
   product: Product | null
@@ -82,49 +83,51 @@ export const ProductDrawer: React.FC<ProductDrawerProps> = ({
     }
   }
 
+  const categoryName = formatCategoryName(product.category)
+
   return (
     <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto p-6 bg-white">
-        <SheetHeader className="pb-4 border-b border-[#dbe4df] text-left">
-          <div className="flex items-center gap-2 mb-1">
+      <SheetContent className="w-full sm:max-w-lg overflow-y-auto p-6 bg-white dark:bg-[#0c1410] border-l border-[#dbe4df] dark:border-[#1d2e26] text-[#111916] dark:text-zinc-100">
+        <SheetHeader className="pb-4 border-b border-[#dbe4df] dark:border-[#1d2e26] text-left">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span
               className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-bold ${
                 product.rank === 1
                   ? "bg-amber-400 text-amber-950"
                   : product.rank === 2
-                  ? "bg-slate-300 text-slate-900"
+                  ? "bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-slate-100"
                   : product.rank === 3
                   ? "bg-amber-700 text-amber-50"
-                  : "bg-gray-100 text-gray-800"
+                  : "bg-gray-100 dark:bg-[#13201a] text-gray-800 dark:text-zinc-300"
               }`}
             >
               Rank #{product.rank ?? "?"}
             </span>
-            <Badge variant="outline" className="text-xs bg-[#f0f4f2] text-gray-800 border-gray-200">
-              {product.category || "Geral"}
+            <Badge variant="outline" className="text-xs bg-[#f0f4f2] dark:bg-[#13201a] text-gray-800 dark:text-zinc-200 border-gray-200 dark:border-[#22362b]">
+              {categoryName}
             </Badge>
-            <Badge variant="outline" className="text-[10px] font-mono text-gray-600">
+            <Badge variant="outline" className="text-[10px] font-mono text-gray-600 dark:text-zinc-400 border-gray-200 dark:border-[#22362b]">
               {product.type}
             </Badge>
           </div>
 
-          <SheetTitle className="text-base font-bold text-[#111916] leading-snug">
+          <SheetTitle className="text-base font-bold text-[#111916] dark:text-white leading-snug">
             {product.title}
           </SheetTitle>
 
-          <SheetDescription className="text-xs text-[#5a6e65] flex items-center justify-between gap-2 pt-1">
+          <SheetDescription className="text-xs text-[#5a6e65] dark:text-[#8ea398] flex items-center justify-between gap-2 pt-1">
             <span className="font-mono">ID: {product.id}</span>
             {product.url ? (
               <a
                 href={product.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[#176449] hover:underline font-medium"
+                className="inline-flex items-center gap-1 text-[#176449] dark:text-[#34d399] hover:underline font-medium"
               >
                 Ver no Mercado Livre <ExternalLink className="w-3 h-3" />
               </a>
             ) : (
-              <span className="text-amber-700 flex items-center gap-1 text-[11px]">
+              <span className="text-amber-700 dark:text-amber-400 flex items-center gap-1 text-[11px]">
                 <ShieldAlert className="w-3 h-3" /> Link direto restrito pelo ML
               </span>
             )}
@@ -134,21 +137,21 @@ export const ProductDrawer: React.FC<ProductDrawerProps> = ({
         <div className="space-y-6 pt-4 text-xs">
           {/* Status Alert Banner */}
           {product.priority ? (
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-900 flex items-start gap-2">
-              <Award className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="p-3 bg-emerald-50 dark:bg-[#11271d] border border-emerald-200 dark:border-[#1f4232] rounded-lg text-emerald-900 dark:text-emerald-200 flex items-start gap-2">
+              <Award className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
               <div>
                 <span className="font-semibold">Oportunidade Promovida!</span>
-                <p className="text-[11px] text-emerald-800 mt-0.5">
+                <p className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-0.5">
                   Crescimento de demanda e viabilidade de marca própria confirmados.
                 </p>
               </div>
             </div>
           ) : (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 flex items-start gap-2">
-              <History className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div className="p-3 bg-amber-50 dark:bg-[#261e11] border border-amber-200 dark:border-[#423419] rounded-lg text-amber-900 dark:text-amber-200 flex items-start gap-2">
+              <History className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div>
                 <span className="font-semibold">Em Investigação (Linha de Base)</span>
-                <p className="text-[11px] text-amber-800 mt-0.5">
+                <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
                   Produto registrado na linha de base. As próximas coletas semanais verificarão
                   o crescimento contínuo para promover a oportunidade.
                 </p>
@@ -158,46 +161,46 @@ export const ProductDrawer: React.FC<ProductDrawerProps> = ({
 
           {/* Key Metrics Trio */}
           <div className="grid grid-cols-3 gap-2">
-            <div className="bg-[#f8faf9] p-3 rounded-lg border border-[#e2ede7] text-center">
-              <div className="text-[11px] text-[#5a6e65] mb-0.5">Demanda</div>
-              <div className="text-xl font-bold text-blue-700">{product.demand ?? 0}</div>
-              <div className="text-[10px] text-[#5a6e65] mt-0.5">
+            <div className="bg-[#f8faf9] dark:bg-[#13201a] p-3 rounded-lg border border-[#e2ede7] dark:border-[#1d2e26] text-center">
+              <div className="text-[11px] text-[#5a6e65] dark:text-[#8ea398] mb-0.5">Demanda</div>
+              <div className="text-xl font-bold text-blue-700 dark:text-blue-400">{product.demand ?? 0}</div>
+              <div className="text-[10px] text-[#5a6e65] dark:text-[#8ea398] mt-0.5">
                 Cob: <strong>{product.demandCoverage ?? 0}%</strong>
               </div>
             </div>
 
-            <div className="bg-[#f8faf9] p-3 rounded-lg border border-[#e2ede7] text-center">
-              <div className="text-[11px] text-[#5a6e65] mb-0.5">Potencial Marca</div>
-              <div className="text-xl font-bold text-[#176449]">{product.brand ?? 0}</div>
-              <div className="text-[10px] text-[#5a6e65] mt-0.5">
+            <div className="bg-[#f8faf9] dark:bg-[#13201a] p-3 rounded-lg border border-[#e2ede7] dark:border-[#1d2e26] text-center">
+              <div className="text-[11px] text-[#5a6e65] dark:text-[#8ea398] mb-0.5">Potencial Marca</div>
+              <div className="text-xl font-bold text-[#176449] dark:text-[#34d399]">{product.brand ?? 0}</div>
+              <div className="text-[10px] text-[#5a6e65] dark:text-[#8ea398] mt-0.5">
                 Cob: <strong>{product.brandCoverage ?? 0}%</strong>
               </div>
             </div>
 
-            <div className="bg-[#f8faf9] p-3 rounded-lg border border-[#e2ede7] text-center">
-              <div className="text-[11px] text-[#5a6e65] mb-0.5">Score Combinado</div>
-              <div className="text-xl font-bold text-[#14523d]">{product.combined ?? 0}</div>
-              <div className="text-[10px] text-[#176449] mt-0.5 font-medium">Prioridade</div>
+            <div className="bg-[#f8faf9] dark:bg-[#13201a] p-3 rounded-lg border border-[#e2ede7] dark:border-[#1d2e26] text-center">
+              <div className="text-[11px] text-[#5a6e65] dark:text-[#8ea398] mb-0.5">Score Combinado</div>
+              <div className="text-xl font-bold text-[#14523d] dark:text-[#10b981]">{product.combined ?? 0}</div>
+              <div className="text-[10px] text-[#176449] dark:text-[#34d399] mt-0.5 font-medium">Prioridade</div>
             </div>
           </div>
 
           {/* Preço & Avaliações (quando disponíveis) */}
-          <div className="p-3 bg-white rounded-lg border border-[#dbe4df] flex items-center justify-between">
+          <div className="p-3 bg-white dark:bg-[#13201a] rounded-lg border border-[#dbe4df] dark:border-[#1d2e26] flex items-center justify-between">
             <div>
-              <span className="text-gray-500 text-[11px]">Preço Observado</span>
-              <div className="font-semibold text-sm text-[#111916]">
+              <span className="text-gray-500 dark:text-zinc-400 text-[11px]">Preço Observado</span>
+              <div className="font-semibold text-sm text-[#111916] dark:text-white">
                 {product.price !== null ? `R$ ${product.price.toFixed(2)}` : "Restrito a ranking"}
               </div>
             </div>
             <div>
-              <span className="text-gray-500 text-[11px]">Avaliações</span>
-              <div className="font-semibold text-sm text-[#111916]">
+              <span className="text-gray-500 dark:text-zinc-400 text-[11px]">Avaliações</span>
+              <div className="font-semibold text-sm text-[#111916] dark:text-white">
                 {product.reviews !== null ? `${product.reviews} avaliações` : "Não público"}
               </div>
             </div>
             <div>
-              <span className="text-gray-500 text-[11px]">Nota Média</span>
-              <div className="font-semibold text-sm text-[#111916]">
+              <span className="text-gray-500 dark:text-zinc-400 text-[11px]">Nota Média</span>
+              <div className="font-semibold text-sm text-[#111916] dark:text-white">
                 {product.rating !== null ? `★ ${product.rating.toFixed(1)}` : "N/D"}
               </div>
             </div>
@@ -205,87 +208,87 @@ export const ProductDrawer: React.FC<ProductDrawerProps> = ({
 
           {/* Section 1: Evidências de Demanda */}
           <div>
-            <h4 className="font-semibold text-xs text-[#111916] uppercase tracking-wider flex items-center gap-1.5 mb-2">
-              <TrendingUp className="w-3.5 h-3.5 text-blue-600" /> Evidências de Demanda
+            <h4 className="font-semibold text-xs text-[#111916] dark:text-white uppercase tracking-wider flex items-center gap-1.5 mb-2">
+              <TrendingUp className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" /> Evidências de Demanda
             </h4>
             {demandItems.length > 0 ? (
               <ul className="space-y-1.5">
                 {demandItems.map((item, idx) => (
                   <li
                     key={idx}
-                    className="p-2 bg-blue-50/50 rounded border border-blue-100 flex items-start gap-2 text-[11px] text-blue-950"
+                    className="p-2 bg-blue-50/50 dark:bg-blue-950/30 rounded border border-blue-100 dark:border-blue-900/50 flex items-start gap-2 text-[11px] text-blue-950 dark:text-blue-200"
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-400 italic">Sem evidências textuais registradas.</p>
+              <p className="text-gray-400 dark:text-zinc-500 italic">Sem evidências textuais registradas.</p>
             )}
           </div>
 
           {/* Section 2: Hipóteses de Diferenciação de Marca */}
           <div>
-            <h4 className="font-semibold text-xs text-[#111916] uppercase tracking-wider flex items-center gap-1.5 mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-[#176449]" /> Hipóteses de Diferenciação de Marca
+            <h4 className="font-semibold text-xs text-[#111916] dark:text-white uppercase tracking-wider flex items-center gap-1.5 mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-[#176449] dark:text-[#34d399]" /> Hipóteses de Diferenciação de Marca
             </h4>
             {brandItems.length > 0 ? (
               <ul className="space-y-1.5">
                 {brandItems.map((item, idx) => (
                   <li
                     key={idx}
-                    className="p-2 bg-emerald-50/50 rounded border border-emerald-100 flex items-start gap-2 text-[11px] text-emerald-950"
+                    className="p-2 bg-emerald-50/50 dark:bg-emerald-950/30 rounded border border-emerald-100 dark:border-emerald-900/50 flex items-start gap-2 text-[11px] text-emerald-950 dark:text-emerald-200"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-[#176449] shrink-0 mt-0.5" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#176449] dark:text-[#34d399] shrink-0 mt-0.5" />
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-400 italic">Sem hipóteses registradas.</p>
+              <p className="text-gray-400 dark:text-zinc-500 italic">Sem hipóteses registradas.</p>
             )}
           </div>
 
           {/* Section 3: Contrapontos e Riscos */}
           <div>
-            <h4 className="font-semibold text-xs text-[#111916] uppercase tracking-wider flex items-center gap-1.5 mb-2">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> Contrapontos e Riscos Concorrenciais
+            <h4 className="font-semibold text-xs text-[#111916] dark:text-white uppercase tracking-wider flex items-center gap-1.5 mb-2">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" /> Contrapontos e Riscos Concorrenciais
             </h4>
             {counterpointItems.length > 0 ? (
               <ul className="space-y-1.5">
                 {counterpointItems.map((item, idx) => (
                   <li
                     key={idx}
-                    className="p-2 bg-amber-50/50 rounded border border-amber-100 flex items-start gap-2 text-[11px] text-amber-950"
+                    className="p-2 bg-amber-50/50 dark:bg-amber-950/30 rounded border border-amber-100 dark:border-amber-900/50 flex items-start gap-2 text-[11px] text-amber-950 dark:text-amber-200"
                   >
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-400 italic">Nenhum contraponto impeditivo identificado.</p>
+              <p className="text-gray-400 dark:text-zinc-500 italic">Nenhum contraponto impeditivo identificado.</p>
             )}
           </div>
 
           {/* Section 4: Histórico de Coletas */}
           {productHistory.length > 0 && (
-            <div className="pt-2 border-t border-gray-100">
-              <h4 className="font-semibold text-xs text-[#111916] uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                <History className="w-3.5 h-3.5 text-[#5a6e65]" /> Histórico deste Produto nas Coletas
+            <div className="pt-2 border-t border-gray-100 dark:border-[#1d2e26]">
+              <h4 className="font-semibold text-xs text-[#111916] dark:text-white uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                <History className="w-3.5 h-3.5 text-[#5a6e65] dark:text-[#8ea398]" /> Histórico deste Produto nas Coletas
               </h4>
               <div className="space-y-1.5">
                 {productHistory.map((h: any, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200 text-[11px]"
+                    className="flex items-center justify-between p-2 bg-gray-50 dark:bg-[#13201a] rounded border border-gray-200 dark:border-[#22362b] text-[11px]"
                   >
-                    <span className="text-gray-600">{formatDate(h.date)}</span>
+                    <span className="text-gray-600 dark:text-zinc-400">{formatDate(h.date)}</span>
                     <div className="flex items-center gap-3">
-                      <span className="font-bold text-[#111916]">Rank #{h.rank ?? "?"}</span>
-                      <span className="text-blue-700 font-medium">Dem: {h.demand ?? 0}</span>
-                      <span className="text-[#176449] font-medium">Marca: {h.brand ?? 0}</span>
+                      <span className="font-bold text-[#111916] dark:text-white">Rank #{h.rank ?? "?"}</span>
+                      <span className="text-blue-700 dark:text-blue-400 font-medium">Dem: {h.demand ?? 0}</span>
+                      <span className="text-[#176449] dark:text-[#34d399] font-medium">Marca: {h.brand ?? 0}</span>
                     </div>
                   </div>
                 ))}

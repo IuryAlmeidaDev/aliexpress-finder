@@ -21,6 +21,27 @@ FIELDS = {
 NUMERIC = {'rank', 'price', 'reviews', 'rating', 'demand', 'demandCoverage', 'brand', 'brandCoverage', 'combined'}
 SCORES = {'demand', 'brand', 'combined', 'demandCoverage', 'brandCoverage'}
 
+CATEGORY_NAMES = {
+    "MLB109197": "Moldes para Artesanatos",
+    "MLB1166": "Pelúcias",
+    "MLB180337": "Slackline",
+    "MLB270072": "Mesas e Cadeiras",
+    "MLB270271": "Anilinas",
+    "MLB271735": "Elásticos",
+    "MLB31767": "Placas",
+    "MLB381266": "Espelhos de Mosaico",
+    "MLB3900": "Tênis",
+    "MLB39492": "Brinquedos de Pegadinhas",
+    "MLB432171": "Massas de Biscuit",
+    "MLB432184": "Placas de Cortiça",
+    "MLB434742": "Adesivos para Frasco e Garrafa",
+    "MLB436797": "Enfeites e Objetos para Pintar",
+    "MLB455695": "Correntes",
+    "MLB455730": "Kits Pontilhismo",
+    "MLB455774": "Massinhas de Modelar",
+}
+
+
 
 def read_report(path: Path) -> dict:
     try:
@@ -82,6 +103,8 @@ def read_report(path: Path) -> dict:
                 p['priority'] = priority
                 if not p['url'].startswith('https://'):
                     p['url'] = ''
+                if p.get('category') in CATEGORY_NAMES:
+                    p['category'] = CATEGORY_NAMES[p['category']]
                 products.append(p)
                 if len(products) > 10000:
                     raise ValueError('Limite de 10.000 produtos por relatório.')

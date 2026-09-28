@@ -48,6 +48,7 @@ import { ArbitrageReport, ArbitrageItem } from "@/types"
 
 interface ArbitrageViewProps {
   initialScans: ArbitrageReport[]
+  isDark?: boolean
 }
 
 type SortField =
@@ -59,7 +60,7 @@ type SortField =
   | "net_margin"
   | "competitors"
 
-export const ArbitrageView: React.FC<ArbitrageViewProps> = ({ initialScans }) => {
+export const ArbitrageView: React.FC<ArbitrageViewProps> = ({ initialScans, isDark = false }) => {
   const [scans, setScans] = useState<ArbitrageReport[]>(initialScans)
   const [selectedScanId, setSelectedScanId] = useState<string>(
     initialScans.length > 0 ? initialScans[0].id || "" : ""
@@ -209,30 +210,30 @@ export const ArbitrageView: React.FC<ArbitrageViewProps> = ({ initialScans }) =>
     if (active && payload && payload.length) {
       const data = payload[0].payload as ArbitrageItem
       return (
-        <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg border border-[#cbd8d1] shadow-lg max-w-xs text-xs space-y-1.5 z-50">
-          <div className="flex items-center justify-between border-b border-[#edf2ef] pb-1">
-            <span className="font-bold text-[#176449]">{data.strategy_label}</span>
-            <span className="font-mono text-[10px] text-gray-500 uppercase">{data.source}</span>
+        <div className="bg-white/95 dark:bg-[#0c1410]/95 backdrop-blur-md p-3 rounded-lg border border-[#cbd8d1] dark:border-[#22362b] shadow-lg max-w-xs text-xs space-y-1.5 z-50 text-[#111916] dark:text-zinc-100">
+          <div className="flex items-center justify-between border-b border-[#edf2ef] dark:border-[#1d2e26] pb-1">
+            <span className="font-bold text-[#176449] dark:text-[#34d399]">{data.strategy_label}</span>
+            <span className="font-mono text-[10px] text-gray-500 dark:text-zinc-400 uppercase">{data.source}</span>
           </div>
-          <p className="font-medium text-[#111916] line-clamp-2 leading-tight">{data.china_title}</p>
+          <p className="font-medium text-[#111916] dark:text-white line-clamp-2 leading-tight">{data.china_title}</p>
           <div className="grid grid-cols-2 gap-2 pt-1">
-            <div className="bg-[#f0f4f2] p-1.5 rounded">
-              <span className="text-[10px] text-[#5a6e65]">Custo Desembarcado:</span>
-              <div className="font-bold text-gray-900">R$ {data.landed_cost_unit_brl.toFixed(2)}</div>
+            <div className="bg-[#f0f4f2] dark:bg-[#13201a] p-1.5 rounded border border-transparent dark:border-[#1d2e26]">
+              <span className="text-[10px] text-[#5a6e65] dark:text-[#8ea398]">Custo Desembarcado:</span>
+              <div className="font-bold text-gray-900 dark:text-white">R$ {data.landed_cost_unit_brl.toFixed(2)}</div>
             </div>
-            <div className="bg-emerald-50 p-1.5 rounded">
-              <span className="text-[10px] text-emerald-700">Preço Mercado Livre:</span>
-              <div className="font-bold text-emerald-900">R$ {data.reference_sale_price_brl.toFixed(2)}</div>
+            <div className="bg-emerald-50 dark:bg-[#11271d] p-1.5 rounded border border-transparent dark:border-[#1f4232]">
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-400">Preço Mercado Livre:</span>
+              <div className="font-bold text-emerald-900 dark:text-[#34d399]">R$ {data.reference_sale_price_brl.toFixed(2)}</div>
             </div>
           </div>
-          <div className="pt-1 flex items-center justify-between text-[11px] border-t border-[#edf2ef] text-[#5a6e65]">
+          <div className="pt-1 flex items-center justify-between text-[11px] border-t border-[#edf2ef] dark:border-[#1d2e26] text-[#5a6e65] dark:text-[#8ea398]">
             <span>
               Margem Líquida:{" "}
-              <strong className={data.net_margin_pct >= 35 ? "text-emerald-700 font-bold" : "text-blue-700"}>
+              <strong className={data.net_margin_pct >= 35 ? "text-emerald-700 dark:text-emerald-400 font-bold" : "text-blue-700 dark:text-sky-400"}>
                 {data.net_margin_pct.toFixed(1)}%
               </strong>
             </span>
-            <span className="text-[#176449] font-medium">Clique para ver ficha →</span>
+            <span className="text-[#176449] dark:text-[#34d399] font-medium">Clique para ver ficha →</span>
           </div>
         </div>
       )
@@ -430,14 +431,14 @@ export const ArbitrageView: React.FC<ArbitrageViewProps> = ({ initialScans }) =>
           </div>
 
           {/* Scatter Plot: Custo Desembarcado x Preço Mercado Livre */}
-          <Card className="border-[#dbe4df] bg-white shadow-xs">
+          <Card className="border-[#dbe4df] dark:border-[#22362b] bg-white dark:bg-[#13201a] shadow-xs">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-bold text-[#111916]">
+                  <CardTitle className="text-base font-bold text-[#111916] dark:text-white">
                     Dispersão de Arbitragem: Custo Desembarcado (R$) × Preço Mercado Livre (R$)
                   </CardTitle>
-                  <CardDescription className="text-xs text-[#5a6e65] mt-0.5">
+                  <CardDescription className="text-xs text-[#5a6e65] dark:text-[#8ea398] mt-0.5">
                     Pontos mais acima da diagonal representam maior margem de lucro líquido entre a fábrica e a venda final.
                   </CardDescription>
                 </div>
@@ -455,19 +456,20 @@ export const ArbitrageView: React.FC<ArbitrageViewProps> = ({ initialScans }) =>
                       }
                     }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1d2e26" : "#e2e8f0"} />
                     <XAxis
                       type="number"
                       dataKey="x"
                       name="Custo Desembarcado (R$)"
                       unit=" R$"
-                      tick={{ fontSize: 11, fill: "#5a6e65" }}
+                      tick={{ fontSize: 11, fill: isDark ? "#8ea398" : "#5a6e65" }}
+                      axisLine={{ stroke: isDark ? "#22362b" : "#cbd8d1" }}
                       label={{
                         value: "Custo Desembarcado Brasil (c/ Impostos II e ICMS) →",
                         position: "insideBottom",
                         offset: -12,
                         fontSize: 11,
-                        fill: "#14523d",
+                        fill: isDark ? "#34d399" : "#14523d",
                         fontWeight: 600,
                       }}
                     />
@@ -476,14 +478,15 @@ export const ArbitrageView: React.FC<ArbitrageViewProps> = ({ initialScans }) =>
                       dataKey="y"
                       name="Preço Mercado Livre (R$)"
                       unit=" R$"
-                      tick={{ fontSize: 11, fill: "#5a6e65" }}
+                      tick={{ fontSize: 11, fill: isDark ? "#8ea398" : "#5a6e65" }}
+                      axisLine={{ stroke: isDark ? "#22362b" : "#cbd8d1" }}
                       label={{
                         value: "Preço Médio Mercado Livre (R$) →",
                         angle: -90,
                         position: "insideLeft",
                         offset: 5,
                         fontSize: 11,
-                        fill: "#14523d",
+                        fill: isDark ? "#34d399" : "#14523d",
                         fontWeight: 600,
                       }}
                     />
@@ -500,7 +503,7 @@ export const ArbitrageView: React.FC<ArbitrageViewProps> = ({ initialScans }) =>
                             key={`cell-${index}`}
                             fill={color}
                             fillOpacity={0.85}
-                            stroke="#ffffff"
+                            stroke={isDark ? "#0c1410" : "#ffffff"}
                             strokeWidth={1.5}
                             r={7}
                             onClick={() => setSelectedItem(entry)}
@@ -513,7 +516,7 @@ export const ArbitrageView: React.FC<ArbitrageViewProps> = ({ initialScans }) =>
               </div>
 
               {/* Legend */}
-              <div className="flex flex-wrap items-center justify-between text-[11px] text-[#5a6e65] mt-2 pt-2 border-t border-gray-100">
+              <div className="flex flex-wrap items-center justify-between text-[11px] text-[#5a6e65] dark:text-[#8ea398] mt-2 pt-2 border-t border-gray-100 dark:border-[#1d2e26]">
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#059669]" /> Oceano Azul (0 concorrentes)

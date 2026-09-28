@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { TrendFilters } from "@/components/TrendFilters"
 import { VelocitySparkline } from "@/components/VelocitySparkline"
 import { TrendOpportunity } from "@/types"
+import { formatCategoryName } from "@/lib/categories"
 import {
   TrendingUp,
   Target,
@@ -24,11 +25,11 @@ interface Props {
 }
 
 const STRATEGY_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
-  OCEANO_AZUL: { label: "Oceano Azul", color: "bg-emerald-100 text-emerald-800 border-emerald-300", icon: "🔥" },
-  TENDENCIA: { label: "Tendência", color: "bg-blue-100 text-blue-800 border-blue-300", icon: "🚀" },
-  EMERGENTE: { label: "Emergente", color: "bg-amber-100 text-amber-800 border-amber-300", icon: "📈" },
-  SATURADO: { label: "Saturado", color: "bg-red-100 text-red-800 border-red-300", icon: "⚠️" },
-  PENDENTE: { label: "Pendente", color: "bg-gray-100 text-gray-700 border-gray-300", icon: "⏳" },
+  OCEANO_AZUL: { label: "Oceano Azul", color: "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60", icon: "🔥" },
+  TENDENCIA: { label: "Tendência", color: "bg-blue-100 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-800/60", icon: "🚀" },
+  EMERGENTE: { label: "Emergente", color: "bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800/60", icon: "📈" },
+  SATURADO: { label: "Saturado", color: "bg-red-100 dark:bg-red-950/50 text-red-800 dark:text-red-300 border-red-300 dark:border-red-800/60", icon: "⚠️" },
+  PENDENTE: { label: "Pendente", color: "bg-gray-100 dark:bg-[#13201a] text-gray-700 dark:text-zinc-300 border-gray-300 dark:border-[#22362b]", icon: "⏳" },
 }
 
 type SortField =
@@ -51,7 +52,7 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
   const pageSize = 20
 
   const categories = useMemo(
-    () => [...new Set(items.map((i) => i.category))].filter(Boolean).sort(),
+    () => [...new Set(items.map((i) => formatCategoryName(i.category)))].filter(Boolean).sort(),
     [items]
   )
 
@@ -66,7 +67,7 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
   const filtered = useMemo(() => {
     let result = items
     if (strategyFilter) result = result.filter((i) => i.strategy === strategyFilter)
-    if (categoryFilter) result = result.filter((i) => i.category === categoryFilter)
+    if (categoryFilter) result = result.filter((i) => formatCategoryName(i.category) === categoryFilter)
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim()
       result = result.filter(
@@ -74,7 +75,8 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
           i.title.toLowerCase().includes(q) ||
           (i.supplier_name || "").toLowerCase().includes(q) ||
           (i.ml_query || "").toLowerCase().includes(q) ||
-          (i.category || "").toLowerCase().includes(q)
+          (i.category || "").toLowerCase().includes(q) ||
+          formatCategoryName(i.category).toLowerCase().includes(q)
       )
     }
     return result
@@ -142,49 +144,49 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
     <div className="space-y-6">
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Card className="border-[#dbe4df] bg-white shadow-xs">
+        <Card className="border-[#dbe4df] dark:border-[#22362b] bg-white dark:bg-[#13201a] shadow-xs">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between text-xs text-[#5a6e65]">
+            <div className="flex items-center justify-between text-xs text-[#5a6e65] dark:text-[#8ea398]">
               <span>Monitorados</span>
-              <BarChart2 className="h-4 w-4 text-[#176449]" />
+              <BarChart2 className="h-4 w-4 text-[#176449] dark:text-[#10b981]" />
             </div>
-            <p className="mt-1 text-2xl font-bold text-[#111916]">{items.length}</p>
-            <p className="text-[11px] text-[#5a6e65] mt-1">Produtos rastreados na China</p>
+            <p className="mt-1 text-2xl font-bold text-[#111916] dark:text-white">{items.length}</p>
+            <p className="text-[11px] text-[#5a6e65] dark:text-[#8ea398] mt-1">Produtos rastreados na China</p>
           </CardContent>
         </Card>
 
-        <Card className="border-emerald-200 bg-emerald-50/50 shadow-xs">
+        <Card className="border-emerald-200 dark:border-[#1f4232] bg-emerald-50/50 dark:bg-[#11271d] shadow-xs">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between text-xs font-medium text-emerald-800">
+            <div className="flex items-center justify-between text-xs font-medium text-emerald-800 dark:text-emerald-300">
               <span>Oceanos Azuis</span>
-              <Flame className="h-4 w-4 text-emerald-600" />
+              <Flame className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <p className="mt-1 text-2xl font-bold text-emerald-950">{oceanCount}</p>
-            <p className="text-[11px] text-emerald-700 mt-1">0 concorrentes diretos no Brasil</p>
+            <p className="mt-1 text-2xl font-bold text-emerald-950 dark:text-white">{oceanCount}</p>
+            <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">0 concorrentes diretos no Brasil</p>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-blue-50/50 shadow-xs">
+        <Card className="border-blue-200 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-950/30 shadow-xs">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between text-xs font-medium text-blue-800">
+            <div className="flex items-center justify-between text-xs font-medium text-blue-800 dark:text-blue-300">
               <span>Tendências Virais</span>
-              <TrendingUp className="h-4 w-4 text-blue-600" />
+              <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
-            <p className="mt-1 text-2xl font-bold text-blue-950">{trendCount}</p>
-            <p className="text-[11px] text-blue-700 mt-1">Crescimento acelerado na China</p>
+            <p className="mt-1 text-2xl font-bold text-blue-950 dark:text-white">{trendCount}</p>
+            <p className="text-[11px] text-blue-700 dark:text-blue-400 mt-1">Crescimento acelerado na China</p>
           </CardContent>
         </Card>
 
-        <Card className="border-[#dbe4df] bg-white shadow-xs">
+        <Card className="border-[#dbe4df] dark:border-[#22362b] bg-white dark:bg-[#13201a] shadow-xs">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between text-xs text-[#5a6e65]">
+            <div className="flex items-center justify-between text-xs text-[#5a6e65] dark:text-[#8ea398]">
               <span>Top Aceleração</span>
-              <Target className="h-4 w-4 text-[#176449]" />
+              <Target className="h-4 w-4 text-[#176449] dark:text-[#10b981]" />
             </div>
-            <p className="mt-1 text-xl font-bold text-[#111916]">
+            <p className="mt-1 text-xl font-bold text-[#111916] dark:text-white">
               {topAccel ? `+${topAccel.sales_velocity_7d.toLocaleString()} / 7d` : "—"}
             </p>
-            <p className="text-[11px] text-[#5a6e65] truncate mt-1" title={topAccel?.title}>
+            <p className="text-[11px] text-[#5a6e65] dark:text-[#8ea398] truncate mt-1" title={topAccel?.title}>
               {topAccel?.title || "Nenhum produto"}
             </p>
           </CardContent>
@@ -214,10 +216,10 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
 
       {/* Table */}
       {sorted.length === 0 ? (
-        <Card className="border-[#dbe4df] bg-white shadow-xs">
+        <Card className="border-[#dbe4df] dark:border-[#22362b] bg-white dark:bg-[#13201a] shadow-xs">
           <CardContent className="py-12 text-center">
-            <TrendingUp className="mx-auto h-12 w-12 text-[#cbd8d1]" />
-            <p className="mt-3 text-sm font-medium text-[#111916]">
+            <TrendingUp className="mx-auto h-12 w-12 text-[#cbd8d1] dark:text-zinc-600" />
+            <p className="mt-3 text-sm font-medium text-[#111916] dark:text-zinc-200">
               {items.length === 0
                 ? "O robô ainda não coletou dados. A primeira coleta roda às 4h da manhã."
                 : "Nenhum produto encontrado com os filtros selecionados."}
@@ -232,7 +234,7 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                   setSearchQuery("")
                   setPage(1)
                 }}
-                className="mt-3 text-xs border-[#cbd8d1]"
+                className="mt-3 text-xs border-[#cbd8d1] dark:border-[#22362b] dark:bg-[#0c1410] dark:text-zinc-200"
               >
                 Limpar filtros
               </Button>
@@ -240,14 +242,14 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-[#dbe4df] bg-white shadow-xs">
+        <Card className="border-[#dbe4df] dark:border-[#22362b] bg-white dark:bg-[#13201a] shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left border-collapse">
               <thead>
-                <tr className="bg-[#f8faf9] border-b border-[#dbe4df] text-[#5a6e65] font-semibold select-none">
+                <tr className="bg-[#f8faf9] dark:bg-[#0c1410] border-b border-[#dbe4df] dark:border-[#1d2e26] text-[#5a6e65] dark:text-[#8ea398] font-semibold select-none">
                   <th
                     onClick={() => handleSort("trend_score")}
-                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] transition-colors w-16"
+                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] dark:hover:text-white transition-colors w-16"
                   >
                     <div className="flex items-center gap-1">
                       Score <ArrowUpDown className="w-3 h-3" />
@@ -255,7 +257,7 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                   </th>
                   <th
                     onClick={() => handleSort("title")}
-                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] transition-colors"
+                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] dark:hover:text-white transition-colors"
                   >
                     <div className="flex items-center gap-1">
                       Produto <ArrowUpDown className="w-3 h-3" />
@@ -263,7 +265,7 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                   </th>
                   <th
                     onClick={() => handleSort("sales_total")}
-                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] transition-colors text-right w-24"
+                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] dark:hover:text-white transition-colors text-right w-24"
                   >
                     <div className="flex items-center justify-end gap-1">
                       Vendas China <ArrowUpDown className="w-3 h-3" />
@@ -271,7 +273,7 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                   </th>
                   <th
                     onClick={() => handleSort("sales_velocity_7d")}
-                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] transition-colors text-right w-28"
+                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] dark:hover:text-white transition-colors text-right w-28"
                   >
                     <div className="flex items-center justify-end gap-1">
                       Velocidade 7d <ArrowUpDown className="w-3 h-3" />
@@ -279,7 +281,7 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                   </th>
                   <th
                     onClick={() => handleSort("ml_competitors")}
-                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] transition-colors text-center w-24"
+                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] dark:hover:text-white transition-colors text-center w-24"
                   >
                     <div className="flex items-center justify-center gap-1">
                       Concorr. BR <ArrowUpDown className="w-3 h-3" />
@@ -287,7 +289,7 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                   </th>
                   <th
                     onClick={() => handleSort("landed_cost_brl")}
-                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] transition-colors text-right w-24"
+                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] dark:hover:text-white transition-colors text-right w-24"
                   >
                     <div className="flex items-center justify-end gap-1">
                       Custo BR <ArrowUpDown className="w-3 h-3" />
@@ -295,59 +297,64 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                   </th>
                   <th
                     onClick={() => handleSort("net_margin_pct")}
-                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] transition-colors text-right w-24"
+                    className="px-3 py-2.5 cursor-pointer hover:text-[#111916] dark:hover:text-white transition-colors text-right w-24"
                   >
                     <div className="flex items-center justify-end gap-1">
                       Margem Líq. <ArrowUpDown className="w-3 h-3" />
                     </div>
                   </th>
-                  <th className="px-3 py-2.5 w-28 text-center">Estratégia</th>
-                  <th className="px-3 py-2.5 w-10"></th>
+                  <th className="px-3 py-2.5 text-center w-28">Estratégia</th>
+                  <th className="px-3 py-2.5 text-right w-10"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#edf2ef]">
+              <tbody className="divide-y divide-[#edf2ef] dark:divide-[#1a2d23]">
                 {paginated.map((item) => {
                   const cfg = STRATEGY_CONFIG[item.strategy] || STRATEGY_CONFIG.PENDENTE
-                  const itemKey = `${item.product_id}-${item.source}`
-                  const isExpanded = expandedId === itemKey
+                  const isExpanded = expandedId === item.product_id
+
                   return (
-                    <React.Fragment key={itemKey}>
+                    <React.Fragment key={item.product_id}>
                       <tr
-                        className="hover:bg-[#f3f7f5] transition-colors cursor-pointer group"
-                        onClick={() => setExpandedId(isExpanded ? null : itemKey)}
+                        onClick={() => setExpandedId(isExpanded ? null : item.product_id)}
+                        className="cursor-pointer hover:bg-[#f3f7f5] dark:hover:bg-[#15241d] transition-colors group"
                       >
                         <td className="px-3 py-2.5">
-                          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#f0f4f2] text-xs font-bold text-[#111916]">
+                          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#f0f4f2] dark:bg-[#0c1410] text-xs font-bold text-[#111916] dark:text-zinc-200">
                             {Math.round(item.trend_score)}
                           </span>
                         </td>
                         <td className="px-3 py-2.5 max-w-[240px]">
-                          <p className="font-semibold text-[#111916] line-clamp-1 group-hover:text-[#176449] transition-colors" title={item.title}>
+                          <p className="font-semibold text-[#111916] dark:text-zinc-100 line-clamp-1 group-hover:text-[#176449] dark:group-hover:text-[#34d399] transition-colors" title={item.title}>
                             {item.title}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
                             <VelocitySparkline data={item.sparkline} />
-                            <Badge variant="outline" className="text-[9px] py-0 px-1 border-gray-200 text-[#5a6e65]">
+                            <Badge variant="outline" className="text-[9px] py-0 px-1 border-gray-200 dark:border-[#22362b] text-[#5a6e65] dark:text-[#8ea398]">
                               {item.source === "alibaba" ? "Alibaba" : "AliExpress"}
                             </Badge>
+                            {item.category && (
+                              <span className="text-[9px] text-[#5a6e65] dark:text-[#8ea398] truncate max-w-[90px]">
+                                {formatCategoryName(item.category)}
+                              </span>
+                            )}
                           </div>
                         </td>
-                        <td className="px-3 py-2.5 font-mono text-right text-gray-700">
+                        <td className="px-3 py-2.5 font-mono text-right text-gray-700 dark:text-zinc-300">
                           {item.sales_total?.toLocaleString() ?? "—"}
                         </td>
-                        <td className="px-3 py-2.5 font-mono text-right text-emerald-700 font-semibold">
+                        <td className="px-3 py-2.5 font-mono text-right text-emerald-700 dark:text-[#34d399] font-semibold">
                           +{item.sales_velocity_7d.toLocaleString()}
                         </td>
                         <td className="px-3 py-2.5 text-center">
                           {item.ml_competitors !== null ? (
-                            <span className={item.ml_competitors === 0 ? "font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded" : "text-gray-700"}>
+                            <span className={item.ml_competitors === 0 ? "font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded" : "text-gray-700 dark:text-zinc-300"}>
                               {item.ml_competitors === 0 ? "0 anúncios" : `${item.ml_competitors} anunc.`}
                             </span>
                           ) : (
-                            <span className="text-[#5a6e65]">—</span>
+                            <span className="text-[#5a6e65] dark:text-zinc-500">—</span>
                           )}
                         </td>
-                        <td className="px-3 py-2.5 font-mono text-right font-medium text-gray-900">
+                        <td className="px-3 py-2.5 font-mono text-right font-medium text-gray-900 dark:text-zinc-100">
                           {item.landed_cost_brl != null
                             ? `R$ ${item.landed_cost_brl.toFixed(2)}`
                             : "—"}
@@ -357,16 +364,16 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                             <span
                               className={`font-semibold ${
                                 item.net_margin_pct >= 35
-                                  ? "text-emerald-700"
+                                  ? "text-emerald-700 dark:text-emerald-400"
                                   : item.net_margin_pct >= 20
-                                  ? "text-blue-700"
-                                  : "text-amber-700"
+                                  ? "text-blue-700 dark:text-sky-400"
+                                  : "text-amber-700 dark:text-amber-400"
                               }`}
                             >
                               {item.net_margin_pct.toFixed(1)}%
                             </span>
                           ) : (
-                            <span className="text-[#5a6e65]">—</span>
+                            <span className="text-[#5a6e65] dark:text-zinc-500">—</span>
                           )}
                         </td>
                         <td className="px-3 py-2.5 text-center">
@@ -374,58 +381,58 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                             {cfg.icon} {cfg.label}
                           </Badge>
                         </td>
-                        <td className="px-3 py-2.5 text-right text-[#5a6e65]">
+                        <td className="px-3 py-2.5 text-right text-[#5a6e65] dark:text-[#8ea398]">
                           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </td>
                       </tr>
                       {isExpanded && (
-                        <tr className="bg-[#f8faf9]">
-                          <td colSpan={9} className="px-6 py-4 border-b border-[#e0e8e3]">
+                        <tr className="bg-[#f8faf9] dark:bg-[#0c1410]">
+                          <td colSpan={9} className="px-6 py-4 border-b border-[#e0e8e3] dark:border-[#1d2e26]">
                             <div className="grid grid-cols-2 gap-4 text-xs lg:grid-cols-4">
-                              <div className="bg-white p-2.5 rounded-lg border border-[#dbe4df]">
-                                <p className="text-[#5a6e65]">Velocidade 30d</p>
-                                <p className="font-semibold text-sm text-[#111916] mt-0.5">
+                              <div className="bg-white dark:bg-[#13201a] p-2.5 rounded-lg border border-[#dbe4df] dark:border-[#1d2e26]">
+                                <p className="text-[#5a6e65] dark:text-[#8ea398]">Velocidade 30d</p>
+                                <p className="font-semibold text-sm text-[#111916] dark:text-white mt-0.5">
                                   +{item.sales_velocity_30d.toLocaleString()} vendas
                                 </p>
                               </div>
-                              <div className="bg-white p-2.5 rounded-lg border border-[#dbe4df]">
-                                <p className="text-[#5a6e65]">Aceleração Semanal</p>
-                                <p className="font-semibold text-sm text-[#111916] mt-0.5">
+                              <div className="bg-white dark:bg-[#13201a] p-2.5 rounded-lg border border-[#dbe4df] dark:border-[#1d2e26]">
+                                <p className="text-[#5a6e65] dark:text-[#8ea398]">Aceleração Semanal</p>
+                                <p className="font-semibold text-sm text-[#111916] dark:text-white mt-0.5">
                                   {item.acceleration > 0 ? "+" : ""}
                                   {item.acceleration.toFixed(1)}%
                                 </p>
                               </div>
-                              <div className="bg-white p-2.5 rounded-lg border border-[#dbe4df]">
-                                <p className="text-[#5a6e65]">Preço Sugerido BR</p>
-                                <p className="font-semibold text-sm text-emerald-800 mt-0.5">
+                              <div className="bg-white dark:bg-[#13201a] p-2.5 rounded-lg border border-[#dbe4df] dark:border-[#1d2e26]">
+                                <p className="text-[#5a6e65] dark:text-[#8ea398]">Preço Sugerido BR</p>
+                                <p className="font-semibold text-sm text-emerald-800 dark:text-[#34d399] mt-0.5">
                                   {item.suggested_price_brl != null
                                     ? `R$ ${item.suggested_price_brl.toFixed(2)}`
                                     : "—"}
                                 </p>
                               </div>
-                              <div className="bg-white p-2.5 rounded-lg border border-[#dbe4df]">
-                                <p className="text-[#5a6e65]">Participação no Full</p>
-                                <p className="font-semibold text-sm text-[#111916] mt-0.5">
+                              <div className="bg-white dark:bg-[#13201a] p-2.5 rounded-lg border border-[#dbe4df] dark:border-[#1d2e26]">
+                                <p className="text-[#5a6e65] dark:text-[#8ea398]">Participação no Full</p>
+                                <p className="font-semibold text-sm text-[#111916] dark:text-white mt-0.5">
                                   {item.ml_full_share_pct != null
                                     ? `${item.ml_full_share_pct.toFixed(0)}% dos concorrentes`
                                     : "—"}
                                 </p>
                               </div>
                               {item.supplier_name && (
-                                <div className="bg-white p-2.5 rounded-lg border border-[#dbe4df]">
-                                  <p className="text-[#5a6e65]">Fornecedor</p>
-                                  <p className="font-semibold text-[#111916] mt-0.5">
+                                <div className="bg-white dark:bg-[#13201a] p-2.5 rounded-lg border border-[#dbe4df] dark:border-[#1d2e26]">
+                                  <p className="text-[#5a6e65] dark:text-[#8ea398]">Fornecedor</p>
+                                  <p className="font-semibold text-[#111916] dark:text-white mt-0.5">
                                     {item.supplier_name}
                                     {item.is_verified && (
-                                      <span className="ml-1 text-emerald-600 font-bold" title="Fornecedor Verificado">✓</span>
+                                      <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold" title="Fornecedor Verificado">✓</span>
                                     )}
                                   </p>
                                 </div>
                               )}
                               {item.moq && (
-                                <div className="bg-white p-2.5 rounded-lg border border-[#dbe4df]">
-                                  <p className="text-[#5a6e65]">Pedido Mínimo (MOQ)</p>
-                                  <p className="font-semibold text-[#111916] mt-0.5">{item.moq} unidades</p>
+                                <div className="bg-white dark:bg-[#13201a] p-2.5 rounded-lg border border-[#dbe4df] dark:border-[#1d2e26]">
+                                  <p className="text-[#5a6e65] dark:text-[#8ea398]">Pedido Mínimo (MOQ)</p>
+                                  <p className="font-semibold text-[#111916] dark:text-white mt-0.5">{item.moq} unidades</p>
                                 </div>
                               )}
                             </div>
@@ -436,7 +443,7 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                                   href={item.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 rounded-md bg-[#176449] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#12523b] transition-colors"
+                                  className="inline-flex items-center gap-1.5 rounded-md bg-[#176449] dark:bg-[#10b981] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#12523b] dark:hover:bg-[#059669] transition-colors"
                                 >
                                   <ExternalLink className="h-3.5 w-3.5" /> Ver Produto na China
                                 </a>
@@ -446,7 +453,7 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                                   href={`https://lista.mercadolivre.com.br/${encodeURIComponent(item.ml_query)}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 rounded-md bg-[#e8f1ec] text-[#14523d] border border-[#cbd8d1] px-3 py-1.5 text-xs font-medium hover:bg-[#d5e6dc] transition-colors"
+                                  className="inline-flex items-center gap-1.5 rounded-md bg-[#e8f1ec] dark:bg-[#152e22] text-[#14523d] dark:text-[#34d399] border border-[#cbd8d1] dark:border-[#1f4232] px-3 py-1.5 text-xs font-medium hover:bg-[#d5e6dc] dark:hover:bg-[#1c3e2e] transition-colors"
                                 >
                                   <Search className="h-3.5 w-3.5" /> Buscar Concorrentes no Mercado Livre
                                 </a>
@@ -463,7 +470,7 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between px-4 py-3 border-t border-[#dbe4df] bg-[#f8faf9] text-xs text-[#5a6e65]">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-[#dbe4df] dark:border-[#1d2e26] bg-[#f8faf9] dark:bg-[#0c1410] text-xs text-[#5a6e65] dark:text-[#8ea398]">
             <div>
               Mostrando {sorted.length === 0 ? 0 : (page - 1) * pageSize + 1} a{" "}
               {Math.min(page * pageSize, sorted.length)} de {sorted.length} itens
@@ -474,11 +481,11 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                 size="icon-xs"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="h-7 w-7"
+                className="h-7 w-7 dark:border-[#22362b] dark:bg-[#13201a] dark:text-zinc-300"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </Button>
-              <span className="px-2 font-medium text-[#111916]">
+              <span className="px-2 font-medium text-[#111916] dark:text-zinc-200">
                 Página {page} de {totalPages}
               </span>
               <Button
@@ -486,7 +493,7 @@ export const TrendsView: React.FC<Props> = ({ items }) => {
                 size="icon-xs"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="h-7 w-7"
+                className="h-7 w-7 dark:border-[#22362b] dark:bg-[#13201a] dark:text-zinc-300"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>

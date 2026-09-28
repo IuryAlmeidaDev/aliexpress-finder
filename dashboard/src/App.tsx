@@ -10,11 +10,12 @@ import { UploadModal } from "@/components/UploadModal"
 import { AuthGate } from "@/components/AuthGate"
 import { ArbitrageView } from "@/components/ArbitrageView"
 import { TrendsView } from "@/components/TrendsView"
+import { Footer } from "@/components/Footer"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { RunReport, Product, DashboardDataResponse, ArbitrageReport, TrendOpportunity, TrendStats, TrendHistoryPoint } from "@/types"
-import { AlertCircle, RefreshCw, BarChart2, ScatterChart, Layers } from "lucide-react"
+import { RunReport, Product, DashboardDataResponse, ArbitrageReport, TrendOpportunity, TrendStats } from "@/types"
+import { AlertCircle, Layers } from "lucide-react"
 
 export const App: React.FC = () => {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null)
@@ -31,6 +32,36 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true)
   const [refreshing, setRefreshing] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Dark mode state
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    try {
+      const saved = localStorage.getItem("radar_theme")
+      if (saved === "light" || saved === "dark") return saved
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+    } catch {
+      return "light"
+    }
+  })
+
+  // Apply dark class to <html> document root
+  useEffect(() => {
+    try {
+      const root = document.documentElement
+      if (theme === "dark") {
+        root.classList.add("dark")
+      } else {
+        root.classList.remove("dark")
+      }
+      localStorage.setItem("radar_theme", theme)
+    } catch (e) {
+      console.error("Theme storage error", e)
+    }
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"))
+  }
 
   // Check auth
   const checkSession = useCallback(async () => {
@@ -155,123 +186,130 @@ export const App: React.FC = () => {
 
   const currentRun = runs.find((r) => r.id === selectedRunId) || runs[runs.length - 1]
   const currentProducts = currentRun ? currentRun.products : []
+  const isDark = theme === "dark"
 
   return (
-    <div className="min-h-screen bg-[#f8faf9] text-[#111916] pb-16">
-      {/* Top Navbar */}
-      <Navbar
-        runs={runs}
-        selectedRunId={selectedRunId}
-        onSelectRun={setSelectedRunId}
-        onOpenUpload={() => setUploadOpen(true)}
-        onRefresh={() => fetchData(true)}
-        onLogout={handleLogout}
-        refreshing={refreshing}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+    <div className="min-h-screen bg-[#f8faf9] dark:bg-[#080d0a] text-[#111916] dark:text-zinc-100 flex flex-col justify-between transition-colors">
+      <div>
+        {/* Top Navbar */}
+        <Navbar
+          runs={runs}
+          selectedRunId={selectedRunId}
+          onSelectRun={setSelectedRunId}
+          onOpenUpload={() => setUploadOpen(true)}
+          onRefresh={() => fetchData(true)}
+          onLogout={handleLogout}
+          refreshing={refreshing}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
 
-      {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 lg:px-8 pt-6 space-y-6">
-        {/* Loading state */}
-        {loading && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-              {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} className="h-20 w-full rounded-xl bg-gray-200" />
-              ))}
-            </div>
-            <Skeleton className="h-[360px] w-full rounded-xl bg-gray-200" />
-            <Skeleton className="h-[300px] w-full rounded-xl bg-gray-200" />
-          </div>
-        )}
-
-        {/* Error state */}
-        {error && !loading && (
-          <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-900">
-            <AlertCircle className="w-4 h-4" />
-            <AlertTitle className="font-semibold text-sm">Falha na conexão</AlertTitle>
-            <AlertDescription className="text-xs flex items-center justify-between">
-              <span>{error}</span>
-              <Button
-                variant="outline"
-                size="xs"
-                onClick={() => fetchData()}
-                className="bg-white text-red-900 border-red-300"
-              >
-                Tentar novamente
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* TAB 1: RADAR MERCADO LIVRE */}
-        {!loading && activeTab === "radar" && (
-          <>
-            {runs.length === 0 ? (
-              <div className="bg-white border border-[#dbe4df] rounded-xl p-12 text-center max-w-lg mx-auto mt-12 shadow-sm">
-                <div className="w-12 h-12 rounded-xl bg-[#e8f1ec] text-[#176449] flex items-center justify-center mx-auto mb-3">
-                  <Layers className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-lg text-[#111916]">Nenhuma Coleta Disponível</h3>
-                <p className="text-xs text-[#5a6e65] mt-1 mb-6">
-                  Ainda não há relatórios XLSX registrados. Você pode importar uma planilha manualmente
-                  ou aguardar o agendamento semanal do coletor no VPS.
-                </p>
-                <Button
-                  onClick={() => setUploadOpen(true)}
-                  className="bg-[#176449] hover:bg-[#12523b] text-white text-xs"
-                >
-                  Importar Primeiro Relatório XLSX
-                </Button>
+        {/* Main Content Area */}
+        <main className="max-w-7xl mx-auto px-4 lg:px-8 pt-6 space-y-6">
+          {/* Loading state */}
+          {loading && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                {[...Array(6)].map((_, i) => (
+                  <Skeleton key={i} className="h-20 w-full rounded-xl bg-gray-200 dark:bg-[#13201a]" />
+                ))}
               </div>
-            ) : (
-              <>
-                {/* 1. Executive KPIs */}
-                <KpiRail products={currentProducts} runCount={runs.length} />
+              <Skeleton className="h-[360px] w-full rounded-xl bg-gray-200 dark:bg-[#13201a]" />
+              <Skeleton className="h-[300px] w-full rounded-xl bg-gray-200 dark:bg-[#13201a]" />
+            </div>
+          )}
 
-                {/* 2. Visual Charts Row */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
-                    <OpportunityMatrix
-                      products={currentProducts}
-                      onSelectProduct={handleSelectProduct}
-                    />
+          {/* Error state */}
+          {error && !loading && (
+            <Alert variant="destructive" className="bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900/60 text-red-900 dark:text-red-200">
+              <AlertCircle className="w-4 h-4" />
+              <AlertTitle className="font-semibold text-sm">Falha na conexão</AlertTitle>
+              <AlertDescription className="text-xs flex items-center justify-between">
+                <span>{error}</span>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={() => fetchData()}
+                  className="bg-white dark:bg-[#13201a] text-red-900 dark:text-red-200 border-red-300 dark:border-red-800"
+                >
+                  Tentar novamente
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* TAB 1: RADAR MERCADO LIVRE */}
+          {!loading && activeTab === "radar" && (
+            <>
+              {runs.length === 0 ? (
+                <div className="bg-white dark:bg-[#0c1410] border border-[#dbe4df] dark:border-[#1d2e26] rounded-xl p-12 text-center max-w-lg mx-auto mt-12 shadow-sm">
+                  <div className="w-12 h-12 rounded-xl bg-[#e8f1ec] dark:bg-[#152e22] text-[#176449] dark:text-[#34d399] flex items-center justify-center mx-auto mb-3">
+                    <Layers className="w-6 h-6" />
                   </div>
-                  <div className="lg:col-span-1 space-y-6">
-                    <CategoryChart
-                      products={currentProducts}
-                      selectedCategory={selectedCategory}
-                      onSelectCategory={setSelectedCategory}
-                    />
-                  </div>
+                  <h3 className="font-bold text-lg text-[#111916] dark:text-white">Nenhuma Coleta Disponível</h3>
+                  <p className="text-xs text-[#5a6e65] dark:text-[#8ea398] mt-1 mb-6">
+                    Ainda não há relatórios XLSX registrados. Você pode importar uma planilha manualmente
+                    ou aguardar o agendamento semanal do coletor no VPS.
+                  </p>
+                  <Button
+                    onClick={() => setUploadOpen(true)}
+                    className="bg-[#176449] dark:bg-[#10b981] hover:bg-[#12523b] dark:hover:bg-[#059669] text-white text-xs"
+                  >
+                    Importar Primeiro Relatório XLSX
+                  </Button>
                 </div>
+              ) : (
+                <>
+                  {/* 1. Executive KPIs */}
+                  <KpiRail products={currentProducts} runCount={runs.length} />
 
-                {/* 3. Temporal Evolution / Distribution */}
-                <TrendChart runs={runs} currentProducts={currentProducts} />
+                  {/* 2. Visual Charts Row */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2">
+                      <OpportunityMatrix
+                        products={currentProducts}
+                        onSelectProduct={handleSelectProduct}
+                        isDark={isDark}
+                      />
+                    </div>
+                    <div className="lg:col-span-1 space-y-6">
+                      <CategoryChart
+                        products={currentProducts}
+                        selectedCategory={selectedCategory}
+                        onSelectCategory={setSelectedCategory}
+                        isDark={isDark}
+                      />
+                    </div>
+                  </div>
 
-                {/* 4. Complete Filterable Table */}
-                <ProductTable
-                  products={currentProducts}
-                  onSelectProduct={handleSelectProduct}
-                  selectedCategory={selectedCategory}
-                  onSelectCategory={setSelectedCategory}
-                />
-              </>
-            )}
-          </>
-        )}
+                  {/* 3. Temporal Evolution / Distribution */}
+                  <TrendChart runs={runs} currentProducts={currentProducts} isDark={isDark} />
 
-        {/* TAB 2: ARBITRAGEM CHINA × MERCADO LIVRE */}
-        {!loading && activeTab === "arbitrage" && (
-          <ArbitrageView initialScans={arbitrageScans} />
-        )}
+                  {/* 4. Complete Filterable Table */}
+                  <ProductTable
+                    products={currentProducts}
+                    onSelectProduct={handleSelectProduct}
+                    selectedCategory={selectedCategory}
+                    onSelectCategory={setSelectedCategory}
+                  />
+                </>
+              )}
+            </>
+          )}
 
-        {/* TAB 3: TENDÊNCIAS / TREND RADAR */}
-        {!loading && activeTab === "trends" && (
-          <TrendsView items={trendItems} />
-        )}
-      </main>
+          {/* TAB 2: ARBITRAGEM CHINA × MERCADO LIVRE */}
+          {!loading && activeTab === "arbitrage" && (
+            <ArbitrageView initialScans={arbitrageScans} isDark={isDark} />
+          )}
+
+          {/* TAB 3: TENDÊNCIAS / TREND RADAR */}
+          {!loading && activeTab === "trends" && (
+            <TrendsView items={trendItems} />
+          )}
+        </main>
+      </div>
 
       {/* Modals & Drawers */}
       <ProductDrawer
@@ -288,6 +326,9 @@ export const App: React.FC = () => {
           fetchData(true)
         }}
       />
+
+      {/* Branded Page Footer */}
+      <Footer />
     </div>
   )
 }

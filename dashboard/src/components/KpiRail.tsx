@@ -41,15 +41,15 @@ export const KpiRail: React.FC<KpiRailProps> = ({ products, runCount }) => {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
       {/* 1. Total Monitorado */}
-      <Card className="border-[#dbe4df] bg-white shadow-xs hover:border-[#cbd8d1] transition-all">
+      <Card className="border-[#dbe4df] dark:border-[#22362b] bg-white dark:bg-[#13201a] shadow-xs hover:border-[#cbd8d1] dark:hover:border-[#314f3f] transition-all">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between text-xs text-[#5a6e65] mb-1">
+          <div className="flex items-center justify-between text-xs text-[#5a6e65] dark:text-[#8ea398] mb-1">
             <span>Total Monitorado</span>
-            <Package className="w-4 h-4 text-[#176449]" />
+            <Package className="w-4 h-4 text-[#176449] dark:text-[#10b981]" />
           </div>
-          <div className="text-2xl font-bold text-[#111916]">{total}</div>
-          <div className="text-[11px] text-[#5a6e65] mt-1 flex items-center gap-1">
-            <span className="font-medium text-[#176449]">
+          <div className="text-2xl font-bold text-[#111916] dark:text-white">{total}</div>
+          <div className="text-[11px] text-[#5a6e65] dark:text-[#8ea398] mt-1 flex items-center gap-1">
+            <span className="font-medium text-[#176449] dark:text-[#34d399]">
               {runCount > 1 ? `${runCount} coletas históricas` : "Linha de base inicial"}
             </span>
           </div>
@@ -57,16 +57,16 @@ export const KpiRail: React.FC<KpiRailProps> = ({ products, runCount }) => {
       </Card>
 
       {/* 2. Oportunidades Promovidas */}
-      <Card className="border-[#dbe4df] bg-white shadow-xs hover:border-[#cbd8d1] transition-all">
+      <Card className="border-[#dbe4df] dark:border-[#22362b] bg-white dark:bg-[#13201a] shadow-xs hover:border-[#cbd8d1] dark:hover:border-[#314f3f] transition-all">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between text-xs text-[#5a6e65] mb-1">
+          <div className="flex items-center justify-between text-xs text-[#5a6e65] dark:text-[#8ea398] mb-1">
             <span>Oportunidades</span>
-            <Award className="w-4 h-4 text-emerald-600" />
+            <Award className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold text-[#111916]">{opportunitiesCount}</div>
-          <div className="text-[11px] text-[#5a6e65] mt-1 flex items-center justify-between">
+          <div className="text-2xl font-bold text-[#111916] dark:text-white">{opportunitiesCount}</div>
+          <div className="text-[11px] text-[#5a6e65] dark:text-[#8ea398] mt-1 flex items-center justify-between">
             <span>Investigar:</span>
-            <span className="font-medium text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded">
+            <span className="font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.2 rounded border border-transparent dark:border-amber-900/50">
               {investigatingCount} itens
             </span>
           </div>
@@ -74,22 +74,22 @@ export const KpiRail: React.FC<KpiRailProps> = ({ products, runCount }) => {
       </Card>
 
       {/* 3. Demanda Média */}
-      <Card className="border-[#dbe4df] bg-white shadow-xs hover:border-[#cbd8d1] transition-all">
+      <Card className="border-[#dbe4df] dark:border-[#22362b] bg-white dark:bg-[#13201a] shadow-xs hover:border-[#cbd8d1] dark:hover:border-[#314f3f] transition-all">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between text-xs text-[#5a6e65] mb-1">
+          <div className="flex items-center justify-between text-xs text-[#5a6e65] dark:text-[#8ea398] mb-1">
             <span>Demanda Média</span>
-            <TrendingUp className="w-4 h-4 text-blue-600" />
+            <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           </div>
-          <div className="text-2xl font-bold text-[#111916]">
+          <div className="text-2xl font-bold text-[#111916] dark:text-white">
             {avgDemand}
-            <span className="text-xs font-normal text-[#5a6e65]">/100</span>
+            <span className="text-xs font-normal text-[#5a6e65] dark:text-[#8ea398]">/100</span>
           </div>
           <div className="mt-1">
-            <div className="flex justify-between text-[10px] text-[#5a6e65] mb-0.5">
+            <div className="flex justify-between text-[10px] text-[#5a6e65] dark:text-[#8ea398] mb-0.5">
               <span>Cobertura:</span>
-              <span className="font-semibold text-blue-700">{avgDemandCoverage}%</span>
+              <span className="font-semibold text-blue-700 dark:text-blue-400">{avgDemandCoverage}%</span>
             </div>
-            <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+            <div className="w-full h-1 bg-gray-100 dark:bg-[#1f3027] rounded-full overflow-hidden">
               <div className="h-full bg-blue-500 rounded-full" style={{ width: `${avgDemandCoverage}%` }} />
             </div>
           </div>
@@ -97,56 +97,56 @@ export const KpiRail: React.FC<KpiRailProps> = ({ products, runCount }) => {
       </Card>
 
       {/* 4. Potencial de Marca */}
-      <Card className="border-[#dbe4df] bg-white shadow-xs hover:border-[#cbd8d1] transition-all">
+      <Card className="border-[#dbe4df] dark:border-[#22362b] bg-white dark:bg-[#13201a] shadow-xs hover:border-[#cbd8d1] dark:hover:border-[#314f3f] transition-all">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between text-xs text-[#5a6e65] mb-1">
+          <div className="flex items-center justify-between text-xs text-[#5a6e65] dark:text-[#8ea398] mb-1">
             <span>Potencial de Marca</span>
-            <Sparkles className="w-4 h-4 text-[#176449]" />
+            <Sparkles className="w-4 h-4 text-[#176449] dark:text-[#10b981]" />
           </div>
-          <div className="text-2xl font-bold text-[#111916]">
+          <div className="text-2xl font-bold text-[#111916] dark:text-white">
             {avgBrand}
-            <span className="text-xs font-normal text-[#5a6e65]">/100</span>
+            <span className="text-xs font-normal text-[#5a6e65] dark:text-[#8ea398]">/100</span>
           </div>
           <div className="mt-1">
-            <div className="flex justify-between text-[10px] text-[#5a6e65] mb-0.5">
+            <div className="flex justify-between text-[10px] text-[#5a6e65] dark:text-[#8ea398] mb-0.5">
               <span>Cobertura:</span>
-              <span className="font-semibold text-[#176449]">{avgBrandCoverage}%</span>
+              <span className="font-semibold text-[#176449] dark:text-[#34d399]">{avgBrandCoverage}%</span>
             </div>
-            <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-[#176449] rounded-full" style={{ width: `${avgBrandCoverage}%` }} />
+            <div className="w-full h-1 bg-gray-100 dark:bg-[#1f3027] rounded-full overflow-hidden">
+              <div className="h-full bg-[#176449] dark:bg-[#10b981] rounded-full" style={{ width: `${avgBrandCoverage}%` }} />
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* 5. Score Combinado */}
-      <Card className="border-[#dbe4df] bg-white shadow-xs hover:border-[#cbd8d1] transition-all">
+      <Card className="border-[#dbe4df] dark:border-[#22362b] bg-white dark:bg-[#13201a] shadow-xs hover:border-[#cbd8d1] dark:hover:border-[#314f3f] transition-all">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between text-xs text-[#5a6e65] mb-1">
+          <div className="flex items-center justify-between text-xs text-[#5a6e65] dark:text-[#8ea398] mb-1">
             <span>Score Combinado</span>
-            <Award className="w-4 h-4 text-[#176449]" />
+            <Award className="w-4 h-4 text-[#176449] dark:text-[#10b981]" />
           </div>
-          <div className="text-2xl font-bold text-[#111916]">
+          <div className="text-2xl font-bold text-[#111916] dark:text-white">
             {avgCombined}
-            <span className="text-xs font-normal text-[#5a6e65]">/100</span>
+            <span className="text-xs font-normal text-[#5a6e65] dark:text-[#8ea398]">/100</span>
           </div>
-          <div className="text-[11px] text-[#5a6e65] mt-1">
+          <div className="text-[11px] text-[#5a6e65] dark:text-[#8ea398] mt-1">
             Média ponderada geral
           </div>
         </CardContent>
       </Card>
 
       {/* 6. Restrições do ML */}
-      <Card className="border-[#dbe4df] bg-white shadow-xs hover:border-[#cbd8d1] transition-all">
+      <Card className="border-[#dbe4df] dark:border-[#22362b] bg-white dark:bg-[#13201a] shadow-xs hover:border-[#cbd8d1] dark:hover:border-[#314f3f] transition-all">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between text-xs text-[#5a6e65] mb-1">
+          <div className="flex items-center justify-between text-xs text-[#5a6e65] dark:text-[#8ea398] mb-1">
             <span>Restrição ML</span>
-            <ShieldAlert className="w-4 h-4 text-amber-600" />
+            <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" />
           </div>
-          <div className="text-2xl font-bold text-amber-900">{restrictedPct}%</div>
-          <div className="text-[11px] text-[#5a6e65] mt-1 flex items-center gap-1" title="Produtos de outros vendedores sem detalhamento público de preço/reviews pelo Mercado Livre">
+          <div className="text-2xl font-bold text-amber-900 dark:text-amber-300">{restrictedPct}%</div>
+          <div className="text-[11px] text-[#5a6e65] dark:text-[#8ea398] mt-1 flex items-center gap-1" title="Produtos sem detalhamento público de preço/reviews pelo Mercado Livre">
             <span className="truncate">Restrito a ranking</span>
-            <AlertCircle className="w-3 h-3 text-amber-600 shrink-0" />
+            <AlertCircle className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" />
           </div>
         </CardContent>
       </Card>
